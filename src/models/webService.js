@@ -79,11 +79,39 @@ export const setupToken = async (source) => {
   return { ...searchData, token };
 };
 
-export const fetchPlaylist = (link, token, source) => {
+//Extract the unique playlist ID from the url using the right regex pattern
+const extractPlaylistID = (link, source) => {
+  let playlistID = "";
+
   //Extract the playlist ID from the share link
   if (source === "spotify") {
     const regex = new RegExp(regexes.spotify_playlistID_regex); //Select the spotify playlist ID regex
-    const playlistID = link.match(regex);
-    console.log(playlistID);
+    playlistID = link.match(regex)[0];
   }
+  // else if (source === "apple") {
+  //   const regex = new RegExp(regexes.apple_playlistID_regex);
+  //   plalylistID = link.match(regex);
+  //   console.log(playlistID);
+  // }
+
+  return playlistID;
+};
+
+export const fetchPlaylist = (link, token, source) => {
+  const playlistID = extractPlaylistID(link, source);
+
+  return fetch(`https://api.spotify.com/v1/playlists/${playlistID}`, {
+    method: "GET",
+    headers: {
+      "Content-type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+  })
+    .then((playlistResponse) => {
+      if (playlistResponse.ok) {
+        console.log("Retrieved playlist successfully");
+      } else console.log("Error with retrieving playlist");
+      return playlistResponse.json();
+    })
+    .catch((error) => console.log(error));
 };

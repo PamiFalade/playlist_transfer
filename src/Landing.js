@@ -26,6 +26,8 @@ const Landing = () => {
   //variable to hold the access token
   const [sourceToken, setSourceToken] = useState("");
 
+  //object to 
+
   //Link that has been entered into
   const playlistLink = "";
   //Formik to manage and validate inputted link
@@ -36,20 +38,22 @@ const Landing = () => {
   const onSubmit = (values) => {
     //Step 1: get access token for source platform
     setupToken(source).then((promise) => {
-      //By making setupToken an async function, you made it so that it returns a promise.
-      setSourceToken(promise.token); // So, it needs to be treated as such
+      //By making setupToken an async function, you made it so that it returns a promise. So, it needs to be treated as such
+      setSourceToken(promise.token); //Use this function to notify when source token has been updated
+
+      //Step 2: retrieve playlist from source platform
+      console.log(fetchPlaylist(values.link, promise.token, source));
     });
 
-    console.log(sourceToken);
     //Step 2: retrieve playlist from source platform
-    // fetchPlaylist(
-    //   "https://open.spotify.com/playlist/5xLiUVHJN3HSaTx9uRMJ3B?si=c262ee3ca9c846cc",
-    //   sourceToken,
-    //   source
-    // );
   };
 
-  const validate = () => {};
+  const validate = (values) => {
+    let errors = {};
+
+    if (!values.link) {
+    }
+  };
 
   const linkForm = useFormik({ initialValues, onSubmit, validate });
 
@@ -123,6 +127,7 @@ const Landing = () => {
             <Form.Label>Share Link for Playlist</Form.Label>
             <Form.Control
               name="link"
+              id="link"
               type="url"
               placeholder="Enter the link to the playlist"
               onChange={linkForm.handleChange}
