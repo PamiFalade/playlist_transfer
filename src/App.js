@@ -1,11 +1,10 @@
-import logo from './logo.svg';
-import './App.css';
-import Landing from './Landing';
+import "./App.css";
+import Landing from "./Landing";
 
-
+//TO-DO: LIFT THE STATE UP
 function App() {
   return (
-    <div className="App" >
+    <div className="App">
       <Landing />
     </div>
   );

@@ -26,10 +26,15 @@ const Landing = () => {
   //variable to hold the access token
   const [sourceToken, setSourceToken] = useState("");
 
-  //object to 
-
   //Link that has been entered into
   const playlistLink = "";
+  //Object that will hold relevant info on the playlist to be transferred
+  const playlist = {
+    name: "",
+    image: "",
+    owner: "",
+    tracks: [],
+  };
   //Formik to manage and validate inputted link
   const initialValues = {
     link: "",
@@ -42,7 +47,25 @@ const Landing = () => {
       setSourceToken(promise.token); //Use this function to notify when source token has been updated
 
       //Step 2: retrieve playlist from source platform
-      console.log(fetchPlaylist(values.link, promise.token, source));
+      fetchPlaylist(values.link, promise.token, source)
+        .then((retrievedPlaylist) => {
+          playlist.name = retrievedPlaylist.name;
+          playlist.images = retrievedPlaylist.images[1];
+          playlist.owner = retrievedPlaylist.owner.display_name;
+          playlist.tracks = retrievedPlaylist.tracks.items.map((song) => {
+            return {
+              songName: song.track.name,
+              isExplicit: song.track.explicit,
+              songAlbum: song.track.album.name,
+              songAlbumImg: song.track.album.images[2],
+              songArtists: [...song.track.artists],
+              sourceURI: song.track.uri,
+              destURI: "",
+            };
+          });
+          console.log(playlist);
+        })
+        .catch((error) => console.log(error));
     });
 
     //Step 2: retrieve playlist from source platform
