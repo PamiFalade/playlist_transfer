@@ -8,11 +8,18 @@ import { useFormik } from "formik";
 import { Buffer } from "buffer";
 import { fetchPlaylist, setupToken } from "./models/webService";
 
+//TO-DO: Finish up styling of track display, and figure out how to surpass the 100 song limit
+
 const Landing = () => {
   //show variable for displaying the modal that takes the playlist link and call the handleTransfer function
   const [showLinkModal, setShowLinkModal] = useState(false);
   const handleShowLinkModal = () => setShowLinkModal(true);
   const handleCloseLinkModal = () => setShowLinkModal(false);
+
+  //show variable for displaying the modal that displays the playlist that was fetched from the source platform
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const handleShowConfirmModal = () => setShowConfirmModal(true);
+  const handleCloseConfirmModal = () => setShowConfirmModal(false);
 
   //source and dest variables to represent the origin platform and destination platform of the playlist respectively
   const [source, setSource] = useState("");
@@ -29,12 +36,8 @@ const Landing = () => {
   //Link that has been entered into
   const playlistLink = "";
   //Object that will hold relevant info on the playlist to be transferred
-  const playlist = {
-    name: "",
-    image: "",
-    owner: "",
-    tracks: [],
-  };
+  const [playlist, setPlaylist] = useState({});
+
   //Formik to manage and validate inputted link
   const initialValues = {
     link: "",
@@ -49,21 +52,27 @@ const Landing = () => {
       //Step 2: retrieve playlist from source platform
       fetchPlaylist(values.link, promise.token, source)
         .then((retrievedPlaylist) => {
-          playlist.name = retrievedPlaylist.name;
-          playlist.images = retrievedPlaylist.images[1];
-          playlist.owner = retrievedPlaylist.owner.display_name;
-          playlist.tracks = retrievedPlaylist.tracks.items.map((song) => {
-            return {
-              songName: song.track.name,
-              isExplicit: song.track.explicit,
-              songAlbum: song.track.album.name,
-              songAlbumImg: song.track.album.images[2],
-              songArtists: [...song.track.artists],
-              sourceURI: song.track.uri,
-              destURI: "",
-            };
-          });
-          console.log(playlist);
+          let foundPlaylist = {
+            //I initially tried just having a global playlist object variable and updating it with these values
+            name: retrievedPlaylist.name, //But its attributes didn't seem to be updating in time before the modal would be rendered
+            image: retrievedPlaylist.images[1].url, //The useState function triggers a re-render of the DOM, so that's what you should use so that the DOM re-renders when those variables have been updated
+            owner: retrievedPlaylist.owner.display_name, //Lesson learned: that's why you should use the state for data that needs to be kept track of and needs to be rendered (it's just better and easier to manage)
+            tracks: retrievedPlaylist.tracks.items.map((song) => {
+              return {
+                songName: song.track.name,
+                isExplicit: song.track.explicit,
+                songAlbum: song.track.album.name,
+                songAlbumImg: song.track.album.images[2],
+                songArtists: [...song.track.artists],
+                sourceURI: song.track.uri,
+                destURI: "",
+              };
+            }),
+          };
+          setPlaylist(foundPlaylist);
+        })
+        .then(() => {
+          handleShowConfirmModal();
         })
         .catch((error) => console.log(error));
     });
@@ -171,6 +180,50 @@ const Landing = () => {
             type="submit"
           >
             Submit
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal
+        show={showConfirmModal}
+        onHide={handleCloseConfirmModal}
+        backdrop="static"
+        contentClassName="PlaylistDisplayModal"
+      >
+        <Modal.Header>
+          <Modal.Title>This Playlist?</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body className="PlaylistDisplayModalBody">
+          <div className="leftSide">
+            <img
+              src={playlist.image}
+              alt="Playlist Cover"
+              width="100%"
+              height="100%"
+            />
+            <h1>{playlist.name}</h1>
+          </div>
+          <div className="rightSide">
+            <div className="trackList">
+              {/* Kept getting: "Uncaught TypeError: Cannot read properties of undefined (reading 'map')" without the question mark
+                    The question mark checks that the array exists first before executing the map function*/}
+              {playlist.tracks?.map((song, index) => (
+                <div className="trackDisplay" key={index}>
+                  <img src={song.songAlbumImg.url} />
+                  <p>{song.songName}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseConfirmModal}>
+            Nope
+          </Button>
+          <Button variant="primary" onClick={handleCloseConfirmModal}>
+            Yes!
           </Button>
         </Modal.Footer>
       </Modal>
