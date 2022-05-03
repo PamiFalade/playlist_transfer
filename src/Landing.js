@@ -6,7 +6,7 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { useFormik } from "formik";
 import { Buffer } from "buffer";
-import { fetchPlaylist, setupToken } from "./models/webService";
+import { fetchPlaylist, setupToken, fetchTracks } from "./models/webService";
 
 //TO-DO: Finish up styling of track display, and figure out how to surpass the 100 song limit
 
@@ -36,7 +36,13 @@ const Landing = () => {
   //Link that has been entered into
   const playlistLink = "";
   //Object that will hold relevant info on the playlist to be transferred
-  const [playlist, setPlaylist] = useState({});
+  const [playlist, setPlaylist] = useState({
+    name: "",
+    image: "",
+    owner: "",
+    tracks: [],
+    offset: "",
+  });
 
   //Formik to manage and validate inputted link
   const initialValues = {
@@ -49,10 +55,11 @@ const Landing = () => {
       //By making setupToken an async function, you made it so that it returns a promise. So, it needs to be treated as such
       setSourceToken(promise.token); //Use this function to notify when source token has been updated
 
+      let foundPlaylist;
       //Step 2: retrieve playlist from source platform
       fetchPlaylist(values.link, promise.token, source)
         .then((retrievedPlaylist) => {
-          let foundPlaylist = {
+          foundPlaylist = {
             //I initially tried just having a global playlist object variable and updating it with these values
             name: retrievedPlaylist.name, //But its attributes didn't seem to be updating in time before the modal would be rendered
             image: retrievedPlaylist.images[1].url, //The useState function triggers a re-render of the DOM, so that's what you should use so that the DOM re-renders when those variables have been updated
@@ -69,10 +76,43 @@ const Landing = () => {
               };
             }),
           };
-          setPlaylist(foundPlaylist);
+
+          return retrievedPlaylist;
+        })
+        .then((retrievedPlaylist) => {
+          let limit = retrievedPlaylist.tracks.limit; //The limit for the number of tracks that could be fetched
+
+          //If there are multiple pages of the songs, loop through to get all the songs
+
+          if (retrievedPlaylist.tracks.total > limit) {
+            let next = retrievedPlaylist.tracks.next;
+            //  while (next != null) {
+            fetchTracks(next, promise.token, source)
+              .then((tracksResponse) => {
+                let extraTracks = tracksResponse.items.map((song) => {
+                  return {
+                    songName: song.track.name,
+                    isExplicit: song.track.explicit,
+                    songAlbum: song.track.album.name,
+                    songAlbumImg: song.track.album.images[2],
+                    songArtists: [...song.track.artists],
+                    sourceURI: song.track.uri,
+                    destURI: "",
+                  };
+                });
+                foundPlaylist.tracks.push(...extraTracks);
+                console.log(tracksResponse.next);
+                // next = tracksResponse.next;
+              })
+              .then(() => {
+                setPlaylist(foundPlaylist);
+                handleShowConfirmModal();
+              });
+            // }
+          }
         })
         .then(() => {
-          handleShowConfirmModal();
+          console.log("Successfully retrieved playlist and tracks");
         })
         .catch((error) => console.log(error));
     });

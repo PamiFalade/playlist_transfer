@@ -1,4 +1,5 @@
 import { Buffer } from "buffer";
+import * as spotify from "./platformServices/spotifyService";
 
 //Object used to store the clientIDs and secrets of the various platforms
 const credentials = {
@@ -7,6 +8,8 @@ const credentials = {
   apple_clientID: "",
   apple_secret: "",
   apple_playlistID_regex: "",
+  deezer_clientID: "539962",
+  deezer_secret: "64fa6e122f54fd5144866dd4e5bd8109",
 };
 
 //Object used to store the regex patterns needed to extract info from url's
@@ -112,6 +115,26 @@ export const fetchPlaylist = (link, token, source) => {
         console.log("Retrieved playlist successfully");
       } else console.log("Error with retrieving playlist");
       return playlistResponse.json();
+    })
+    .catch((error) => console.log(error));
+};
+
+//This function is used to fetch all the tracks of a playlist which has more songs than the fetch limit
+export const fetchTracks = (nextPage, token, source) => {
+  return fetch(nextPage, {
+    method: "GET",
+    headers: {
+      "Content-type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+  })
+    .then((tracksResponse) => {
+      if (tracksResponse.ok) {
+        console.log("Retrieved the rest of the tracks successfully");
+      } else {
+        console.log("Error with retrieving the rest of the tracks");
+      }
+      return tracksResponse.json();
     })
     .catch((error) => console.log(error));
 };
