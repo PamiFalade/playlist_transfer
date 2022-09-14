@@ -1,4 +1,4 @@
-import { React, useState } from "react";
+import { React, useState, useEffect } from "react";
 import "./Views/LandingViews.css";
 import Card from "react-bootstrap/Card";
 import Modal from "react-bootstrap/Modal";
@@ -34,7 +34,8 @@ const Landing = () => {
   const [sourceToken, setSourceToken] = useState("");
 
   //Link that has been entered into
-  const playlistLink = "";
+  const [playlistLink, setPlaylistLink] = useState("");
+
   //Object that will hold relevant info on the playlist to be transferred
   const [playlist, setPlaylist] = useState({
     name: "",
@@ -44,80 +45,39 @@ const Landing = () => {
     offset: "",
   });
 
+  const transferPlaylist = () => {
+    console.log("Heyyy " + playlistLink);
+    const link = playlistLink;
+    if (link === "") return; //To prevent the useEffect from doing anything when it runs after the first render, when there is no link
+
+    //Step 1: get access token for source platform
+    setupToken(source).then((token) => {
+      //By making setupToken an async function, you made it so that it returns a promise. So, it needs to be treated as such
+      setSourceToken(token); //Use this function to notify when source token has been updated
+
+      //Step 2: retrieve playlist from source platform
+      fetchPlaylist(link, token, source)
+        .then((retrievedPlaylist) => {
+          console.log(retrievedPlaylist);
+          setPlaylist(retrievedPlaylist);
+        })
+        .then(() => {
+          handleShowConfirmModal();
+        })
+        .catch((error) => console.log(error));
+    });
+  };
+
+  useEffect(transferPlaylist, [playlistLink, playlist]);
+
   //Formik to manage and validate inputted link
   const initialValues = {
     link: "",
   };
 
   const onSubmit = (values) => {
-    //Step 1: get access token for source platform
-    setupToken(source).then((promise) => {
-      //By making setupToken an async function, you made it so that it returns a promise. So, it needs to be treated as such
-      setSourceToken(promise.token); //Use this function to notify when source token has been updated
-
-      let foundPlaylist;
-      //Step 2: retrieve playlist from source platform
-      fetchPlaylist(values.link, promise.token, source)
-        .then((retrievedPlaylist) => {
-          foundPlaylist = {
-            //I initially tried just having a global playlist object variable and updating it with these values
-            name: retrievedPlaylist.name, //But its attributes didn't seem to be updating in time before the modal would be rendered
-            image: retrievedPlaylist.images[1].url, //The useState function triggers a re-render of the DOM, so that's what you should use so that the DOM re-renders when those variables have been updated
-            owner: retrievedPlaylist.owner.display_name, //Lesson learned: that's why you should use the state for data that needs to be kept track of and needs to be rendered (it's just better and easier to manage)
-            tracks: retrievedPlaylist.tracks.items.map((song) => {
-              return {
-                songName: song.track.name,
-                isExplicit: song.track.explicit,
-                songAlbum: song.track.album.name,
-                songAlbumImg: song.track.album.images[2],
-                songArtists: [...song.track.artists],
-                sourceURI: song.track.uri,
-                destURI: "",
-              };
-            }),
-          };
-
-          return retrievedPlaylist;
-        })
-        .then((retrievedPlaylist) => {
-          let limit = retrievedPlaylist.tracks.limit; //The limit for the number of tracks that could be fetched
-
-          //If there are multiple pages of the songs, loop through to get all the songs
-
-          if (retrievedPlaylist.tracks.total > limit) {
-            let next = retrievedPlaylist.tracks.next;
-            //  while (next != null) {
-            fetchTracks(next, promise.token, source)
-              .then((tracksResponse) => {
-                let extraTracks = tracksResponse.items.map((song) => {
-                  return {
-                    songName: song.track.name,
-                    isExplicit: song.track.explicit,
-                    songAlbum: song.track.album.name,
-                    songAlbumImg: song.track.album.images[2],
-                    songArtists: [...song.track.artists],
-                    sourceURI: song.track.uri,
-                    destURI: "",
-                  };
-                });
-                foundPlaylist.tracks.push(...extraTracks);
-                console.log(tracksResponse.next);
-                // next = tracksResponse.next;
-              })
-              .then(() => {
-                setPlaylist(foundPlaylist);
-                handleShowConfirmModal();
-              });
-            // }
-          }
-        })
-        .then(() => {
-          console.log("Successfully retrieved playlist and tracks");
-        })
-        .catch((error) => console.log(error));
-    });
-
-    //Step 2: retrieve playlist from source platform
+    //Once the link has been submitted, begin the playlist transfer
+    setPlaylistLink(values.link);
   };
 
   const validate = (values) => {
