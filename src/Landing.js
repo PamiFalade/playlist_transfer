@@ -8,8 +8,6 @@ import { useFormik } from "formik";
 import { Buffer } from "buffer";
 import { fetchPlaylist, setupToken, fetchTracks } from "./models/webService";
 
-//TO-DO: Finish up styling of track display, and figure out how to surpass the 100 song limit
-
 const Landing = () => {
   //show variable for displaying the modal that takes the playlist link and call the handleTransfer function
   const [showLinkModal, setShowLinkModal] = useState(false);
@@ -21,14 +19,18 @@ const Landing = () => {
   const handleShowConfirmModal = () => setShowConfirmModal(true);
   const handleCloseConfirmModal = () => setShowConfirmModal(false);
 
-  //source and dest variables to represent the origin platform and destination platform of the playlist respectively
+  //source variable to represent the origin platform of the playlist
   const [source, setSource] = useState("");
-  const [dest, setDest] = useState("");
-  //sets source and dest variables
-  const handleTransfer = (source, dest) => {
-    setSource(source);
-    setDest(dest);
+  const handleSource = (link) => {
+    if (link.startsWith("https://open.spotify.com/playlist/"))
+      setSource("spotify");
+    else if (link.startsWith("https://music.apple.com/ca/playlist/"))
+      //May need to change this because of the 'ca'
+      setSource("apple");
   };
+
+  //dest variable to represent the destination platform of the playlist
+  const [dest, setDest] = useState("");
 
   //variable to hold the access token
   const [sourceToken, setSourceToken] = useState("");
@@ -45,8 +47,10 @@ const Landing = () => {
     offset: "",
   });
 
+  //Variable used to cause the thing to re-render so that all songs past #100 will display
+  const [loadedPlaylists, setLoadedPlaylists] = useState(false);
+
   const transferPlaylist = () => {
-    console.log("Heyyy " + playlistLink);
     const link = playlistLink;
     if (link === "") return; //To prevent the useEffect from doing anything when it runs after the first render, when there is no link
 
@@ -58,17 +62,17 @@ const Landing = () => {
       //Step 2: retrieve playlist from source platform
       fetchPlaylist(link, token, source)
         .then((retrievedPlaylist) => {
-          console.log(retrievedPlaylist);
           setPlaylist(retrievedPlaylist);
         })
         .then(() => {
           handleShowConfirmModal();
+          setLoadedPlaylists(true);
         })
         .catch((error) => console.log(error));
     });
   };
 
-  useEffect(transferPlaylist, [playlistLink, playlist]);
+  useEffect(transferPlaylist, [playlistLink]);
 
   //Formik to manage and validate inputted link
   const initialValues = {
@@ -77,6 +81,7 @@ const Landing = () => {
 
   const onSubmit = (values) => {
     //Once the link has been submitted, begin the playlist transfer
+    handleSource(values.link);
     setPlaylistLink(values.link);
   };
 
@@ -96,52 +101,23 @@ const Landing = () => {
           <Card.Title>Welcome!</Card.Title>
         </Card.Header>
         <Card.Body className="LandingBody">
-          <Card
-            border="primary"
-            className="transferOption"
-            onClick={() => {
-              handleShowLinkModal();
-              handleTransfer("apple", "spotify");
-            }}
-          >
-            <Card.Body>
-              <img
-                src="https://pbs.twimg.com/profile_images/1431129444362579971/jGrgSKDD_400x400.jpg"
-                className="Logo"
-              />
-              <img
-                src="https://toppng.com/uploads/preview/right-arrow-icon-ico-11562931718i8rqgsef9d.png"
-                className="Logo"
-              />
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/800px-Spotify_logo_without_text.svg.png"
-                className="Logo"
-              />
-            </Card.Body>
-          </Card>
-          <Card
-            border="primary"
-            className="transferOption"
-            onClick={() => {
-              handleShowLinkModal();
-              handleTransfer("spotify", "apple");
-            }}
-          >
-            <Card.Body>
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/800px-Spotify_logo_without_text.svg.png"
-                className="Logo"
-              />
-              <img
-                src="https://toppng.com/uploads/preview/right-arrow-icon-ico-11562931718i8rqgsef9d.png"
-                className="Logo"
-              />
-              <img
-                src="https://pbs.twimg.com/profile_images/1431129444362579971/jGrgSKDD_400x400.jpg"
-                className="Logo"
-              />
-            </Card.Body>
-          </Card>
+          {!loadedPlaylists && (
+            <Card
+              border="primary"
+              className="actionButton"
+              onClick={handleShowLinkModal}
+            >
+              <Card.Body>
+                <h3>Begin Transfer</h3>
+              </Card.Body>
+            </Card>
+          )}
+          {loadedPlaylists && (
+            <Card border="primary">
+              <Card.Header>Login</Card.Header>
+              <Card.Body></Card.Body>
+            </Card>
+          )}
         </Card.Body>
       </Card>
 
@@ -203,6 +179,7 @@ const Landing = () => {
               height="100%"
             />
             <h1>{playlist.name}</h1>
+            <h4>{playlist.tracks.length} songs</h4>
           </div>
           <div className="rightSide">
             <div className="trackList">

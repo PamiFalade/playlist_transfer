@@ -9,7 +9,6 @@ const credentials = {
   spotify_secret: "c24f98c34e26485db177b530895c1769",
   apple_clientID: "",
   apple_secret: "",
-  apple_playlistID_regex: "",
   deezer_clientID: "539962",
   deezer_secret: "64fa6e122f54fd5144866dd4e5bd8109",
 };

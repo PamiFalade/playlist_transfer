@@ -40,7 +40,7 @@ body {
   }
 }
 
-.transferOption:hover {
+.actionButton:hover {
   animation-name: enlarge;
   animation-duration: 2s;
   -webkit-animation-fill-mode: forwards; /* This line makes the animation stay in its final form as long as the mouse is hovering over the div */
@@ -53,10 +53,8 @@ body {
 }
 
 .PlaylistDisplayModal {
-    height: 100%;
-
+  height: 100%;
 }
-
 
 .PlaylistDisplayModalBody {
   width: 100%;

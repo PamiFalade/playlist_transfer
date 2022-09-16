@@ -66,7 +66,7 @@ export const fetchPlaylist = (link, token) => {
 };
 
 //This function will be used to get the specific playlist information from the Spotify API's playlist response
-export const extractPlaylistInfo = (playlistResponse, token) => {
+export const extractPlaylistInfo = async (playlistResponse, token) => {
   let limit = playlistResponse.tracks.limit; //Limit of how many songs can be fetched at a time
   let total = playlistResponse.tracks.total; //Total number of songs in the playlist
   let extraTracks; //The next page of songs from the playlist
@@ -74,7 +74,10 @@ export const extractPlaylistInfo = (playlistResponse, token) => {
 
   let retrievedPlaylist = {
     name: playlistResponse.name, //But its attributes didn't seem to be updating in time before the modal would be rendered
-    image: playlistResponse.images[1].url, //The useState function triggers a re-render of the DOM, so that's what you should use so that the DOM re-renders when those variables have been updated
+    image:
+      playlistResponse.images.length > 1 //If there are multiple sizes of the playlist image, pick the second one
+        ? playlistResponse.images[1].url
+        : playlistResponse.images[0].url, //The useState function triggers a re-render of the DOM, so that's what you should use so that the DOM re-renders when those variables have been updated
     owner: playlistResponse.owner.display_name, //Lesson learned: that's why you should use the state for data that needs to be kept track of and needs to be rendered (it's just better and easier to manage)
     tracks: playlistResponse.tracks.items.map((song) => {
       return {
@@ -93,7 +96,7 @@ export const extractPlaylistInfo = (playlistResponse, token) => {
   let numPages = Math.ceil(total / limit);
   let count = 1;
   for (var i = 1; i < numPages; i++) {
-    fetchTracks(next, token)
+    await fetchTracks(next, token)
       .then((tracksResponse) => {
         extraTracks = tracksResponse.items.map((song) => {
           return {
@@ -109,13 +112,9 @@ export const extractPlaylistInfo = (playlistResponse, token) => {
         next = tracksResponse.next;
       })
       .then(() => retrievedPlaylist.tracks.push(...extraTracks));
-
-    // console.log(i + " run");
-    // console.log(retrievedPlaylist.tracks);
     if (next == null) break;
   }
 
-  console.log(retrievedPlaylist.tracks);
   return retrievedPlaylist;
 };
 
