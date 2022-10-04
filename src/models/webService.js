@@ -61,24 +61,7 @@ export const setupToken = async (source) => {
   return token;
 };
 
-// //Extract the unique playlist ID from the url using the right regex pattern
-// const extractPlaylistID = (link, source) => {
-//   let playlistID = "";
-
-//   //Extract the playlist ID from the share link
-//   if (source === "spotify") {
-//     playlistID = spotify.extractPlaylistID(link); //Select the spotify playlist ID regex
-//   }
-
-//   // else if (source === "apple") {
-//   //   const regex = new RegExp(regexes.apple_playlistID_regex);
-//   //   plalylistID = link.match(regex);
-//   //   console.log(playlistID);
-//   // }
-
-//   return playlistID;
-// };
-
+//Call the appropriate "fetchPlaylist" function
 export const fetchPlaylist = (link, token, source) => {
   //Fetch the playlist with the correct api call
   let foundPlaylist;
@@ -93,38 +76,32 @@ export const fetchPlaylist = (link, token, source) => {
   }
 
   return foundPlaylist;
-  // return fetch(`https://api.spotify.com/v1/playlists/${playlistID}`, {
-  //   method: "GET",
-  //   headers: {
-  //     "Content-type": "application/json",
-  //     Authorization: "Bearer " + token,
-  //   },
-  // })
-  //   .then((playlistResponse) => {
-  //     if (playlistResponse.ok) {
-  //       console.log("Retrieved playlist successfully");
-  //     } else console.log("Error with retrieving playlist");
-  //     return playlistResponse.json();
-  //   })
-  //   .catch((error) => console.log(error));
 };
 
-//This function is used to fetch all the tracks of a playlist which has more songs than the fetch limit
-export const fetchTracks = (nextPage, token, source) => {
-  return fetch(nextPage, {
-    method: "GET",
-    headers: {
-      "Content-type": "application/json",
-      Authorization: "Bearer " + token,
-    },
-  })
-    .then((tracksResponse) => {
-      if (tracksResponse.ok) {
-        console.log("Retrieved the rest of the tracks successfully");
-      } else {
-        console.log("Error with retrieving the rest of the tracks");
-      }
-      return tracksResponse.json();
-    })
-    .catch((error) => console.log(error));
+export const handleAuthorization = (source) => {
+  if (source === "spotify") {
+    spotify.getAuthorization();
+  } else if (source === "deezer") {
+    console.log("Coming soon...");
+  }
+};
+
+export const getAccessToken = async () => {
+  let tokenResponse = await spotify.getToken().then((response) => {
+    if (response === null) return null;
+    else return response.json();
+  });
+
+  if (tokenResponse === null) return "";
+
+  return tokenResponse.access_token;
+};
+
+export const getUserDetails = async (token, platform) => {
+  if (platform === "spotify") {
+    let userDetails = await spotify
+      .fetchUserDetails(token)
+      .then((response) => response.json());
+    return userDetails;
+  }
 };

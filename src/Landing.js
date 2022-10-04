@@ -6,7 +6,13 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { useFormik } from "formik";
 import { Buffer } from "buffer";
-import { fetchPlaylist, setupToken, fetchTracks } from "./models/webService";
+import {
+  fetchPlaylist,
+  setupToken,
+  handleAuthorization,
+  getAccessToken,
+  getUserDetails,
+} from "./models/webService";
 
 const Landing = () => {
   //show variable for displaying the modal that takes the playlist link and call the handleTransfer function
@@ -18,6 +24,11 @@ const Landing = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const handleShowConfirmModal = () => setShowConfirmModal(true);
   const handleCloseConfirmModal = () => setShowConfirmModal(false);
+
+  //show variable for displaying the modal that displays the playlist that was fetched from the source platform
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const handleShowLoginModal = () => setShowLoginModal(true);
+  const handleCloseLoginModal = () => setShowLoginModal(false);
 
   //source variable to represent the origin platform of the playlist
   const [source, setSource] = useState("");
@@ -32,8 +43,11 @@ const Landing = () => {
   //dest variable to represent the destination platform of the playlist
   const [dest, setDest] = useState("");
 
-  //variable to hold the access token
+  //variable to hold my access token
   const [sourceToken, setSourceToken] = useState("");
+
+  //variable to hold user's access token
+  const [destToken, setDestToken] = useState("");
 
   //Link that has been entered into
   const [playlistLink, setPlaylistLink] = useState("");
@@ -45,6 +59,14 @@ const Landing = () => {
     owner: "",
     tracks: [],
     offset: "",
+  });
+
+  //Object to hold logged-in user's information
+  const [user, setUser] = useState({
+    username: "",
+    email: "",
+    id: "",
+    img: "",
   });
 
   //Variable used to cause the thing to re-render so that all songs past #100 will display
@@ -72,7 +94,48 @@ const Landing = () => {
     });
   };
 
+  //Call the appropriate login function
+  const handleLogin = (event) => {
+    handleCloseLoginModal();
+    if (event.currentTarget.id === "spotifyLogin") {
+      setDest("spotify");
+      handleAuthorization("spotify");
+    } else if (event.currentTarget.id === "appleLogin") {
+      setDest("apple");
+      handleAuthorization("apple");
+    } else if (event.currentTarget.id === "deezerLogin") {
+      setDest("deezer");
+      handleAuthorization("deezer");
+    } else if (event.currentTarget.id === "youtubeLogin") {
+      setDest("youtube");
+      handleAuthorization("youtube");
+    }
+  };
+
+  // Re-run the transferPlaylist function when a new playlist has been loaded
   useEffect(transferPlaylist, [playlistLink]);
+
+  //Get the user's access token once they log in and store it in the state variable
+  useEffect(() => {
+    if (window.location.search) {
+      getAccessToken().then((token) => {
+        if (token != "") {
+          setDestToken(token);
+          let destProfile = getUserDetails(token, "spotify").then(
+            (retrievedUser) => {
+              console.log(retrievedUser);
+              setUser({
+                username: retrievedUser.display_name,
+                email: retrievedUser.email,
+                id: retrievedUser.id,
+                image: retrievedUser.images[0].url,
+              });
+            }
+          );
+        }
+      });
+    }
+  }, [window.location]);
 
   //Formik to manage and validate inputted link
   const initialValues = {
@@ -96,9 +159,22 @@ const Landing = () => {
 
   return (
     <div>
+      <Button
+        type="button"
+        className="btn btn-light"
+        onClick={handleShowLoginModal}
+      >
+        Login
+      </Button>
+      <div className="AccountInfo">
+        <img src={user.image} width="50%"/>
+        <p>{user.username}</p>
+      </div>
       <Card className="Landing" border="primary">
         <Card.Header>
-          <Card.Title>Welcome!</Card.Title>
+          <Card.Title>
+            <h1>Welcome!</h1>
+          </Card.Title>
         </Card.Header>
         <Card.Body className="LandingBody">
           {!loadedPlaylists && (
@@ -113,14 +189,30 @@ const Landing = () => {
             </Card>
           )}
           {loadedPlaylists && (
-            <Card border="primary">
-              <Card.Header>Login</Card.Header>
-              <Card.Body></Card.Body>
-            </Card>
+            <div>
+              <Card border="primary">
+                <Card.Header>Login</Card.Header>
+                <Card.Body>
+                  <Button id="spotifyLogin" onClick={handleLogin}>
+                    Spotify
+                  </Button>
+                  <Button>Apple</Button>
+                  <Button>Deezer</Button>
+                  <Button>YouTube</Button>
+                  {/* <img src='https://i.scdn.co/image/ab67706c0000bebb5cbc1132087a5d55b5c50247'/> */}
+                </Card.Body>
+              </Card>
+
+              <Card border="primary">
+                <div className="trackDisplay">
+                  <img src={playlist.image} />
+                  <p>{playlist.name}</p>
+                </div>
+              </Card>
+            </div>
           )}
         </Card.Body>
       </Card>
-
       <Modal show={showLinkModal} onHide={handleCloseLinkModal}>
         <Modal.Header closeButton>
           <Modal.Title>Let's transfer!</Modal.Title>
@@ -159,7 +251,6 @@ const Landing = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-
       <Modal
         show={showConfirmModal}
         onHide={handleCloseConfirmModal}
@@ -203,6 +294,47 @@ const Landing = () => {
             Yes!
           </Button>
         </Modal.Footer>
+      </Modal>
+      <Modal show={showLoginModal} onHide={handleCloseLoginModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Login</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="LoginContainer">
+          <div className="LoginGrid">
+            <div
+              id="spotifyLogin"
+              className="loginButton"
+              onClick={handleLogin}
+            >
+              <img
+                src="https://www.freepnglogos.com/uploads/spotify-logo-png/image-gallery-spotify-logo-21.png"
+                width="50%"
+              />
+            </div>
+            <div id="appleLogin" className="loginButton" onClick={handleLogin}>
+              <img
+                src="https://i.pinimg.com/736x/67/f6/cb/67f6cb14f862297e3c145014cdd6b635.jpg"
+                width="50%"
+              />
+            </div>
+            <div id="deezerLogin" className="loginButton" onClick={handleLogin}>
+              <img
+                src="https://logos-world.net/wp-content/uploads/2021/03/Deezer-Logo.png"
+                width="50%"
+              />
+            </div>
+            <div
+              id="youtubeLogin"
+              className="loginButton"
+              onClick={handleLogin}
+            >
+              <img
+                src="https://seeklogo.com/images/Y/youtube-music-logo-50422973B2-seeklogo.com.png"
+                width="50%"
+              />
+            </div>
+          </div>
+        </Modal.Body>
       </Modal>
     </div>
   );
