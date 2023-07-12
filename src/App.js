@@ -1,11 +1,22 @@
 import "./App.css";
-import Landing from "./Landing";
+import Landing from "./Pages/Landing";
+import PlaylistConfirm from "./Pages/PlaylistConfirm"
+import RootLayout from "./Layouts/RootLayout";
 
-//TO-DO: LIFT THE STATE UP
+import { BrowserRouter, createBrowserRouter, createRoutesFromElements, RouterProvider, Route, NavLink } from 'react-router-dom';
+
 function App() {
+
+  const router = createBrowserRouter(
+                      createRoutesFromElements(
+                        <Route path="/" element={<RootLayout />} >
+                          <Route index element={<Landing />} />
+                          <Route path="/confirm-playlist" element={<PlaylistConfirm />} />
+                        </Route>
+                      ));
   return (
     <div className="App">
-      <Landing />
+      <RouterProvider router={router} />
     </div>
   );
 }
