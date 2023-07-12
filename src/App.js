@@ -11,7 +11,7 @@ function App() {
                       createRoutesFromElements(
                         <Route path="/" element={<RootLayout />} >
                           <Route index element={<Landing />} />
-                          <Route path="/confirm-playlist" element={<PlaylistConfirm />} />
+                          <Route path="/mi" element={<PlaylistConfirm />} />
                         </Route>
                       ));
   return (

@@ -1,4 +1,4 @@
-
+import "../Views/PlaylistConfirmViews.css";
 
 
 const PlaylistConfirm = () => {

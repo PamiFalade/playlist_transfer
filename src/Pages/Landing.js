@@ -6,6 +6,7 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { useFormik } from "formik";
 import { Buffer } from "buffer";
+import PlatformSelector from "../Components/PlatformSelector";
 import {
   fetchPlaylist,
   setupToken,
@@ -33,24 +34,7 @@ const Landing = () => {
         </Card.Body>
       </Card>
 
-      <Card className="card">
-        <Card.Title>With Login...</Card.Title>
-        <Card.Subtitle>Login to find the playlist</Card.Subtitle>
-        <Card.Body>
-          <div id="platformGrid">
-            <div className="logoContainer">
-              <img className="platformLogo" src="spotify.svg" />
-            </div>
-            <div className="logoContainer">
-              <img className="platformLogo" src="apple-music.svg" />
-            </div>
-            <div className="logoContainer">
-              <img  className="platformLogo" src="soundcloud.svg" />
-            </div>
-
-          </div>
-        </Card.Body>
-      </Card>
+      <PlatformSelector />
     </div>
   );
 };
