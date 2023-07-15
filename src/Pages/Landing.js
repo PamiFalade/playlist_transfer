@@ -19,7 +19,7 @@ const Landing = () => {
 
 
   return (
-    <div className="landing">
+    <main className="landing">
       <h1>Welcome!</h1>
       <h2>Find your playlist...</h2>
       <Card className="card">
@@ -35,7 +35,7 @@ const Landing = () => {
       </Card>
 
       <PlatformSelector />
-    </div>
+    </main>
   );
 };
 

@@ -124,7 +124,7 @@ const PlaylistConfirm = () => {
     ]
 
     return(
-        <div id="playlistSummary">
+        <main id="playlistSummary">
             <img id="playlistImage" src="https://upload.wikimedia.org/wikipedia/en/c/c2/Wizkid_-_Made_in_Lagos.png"/>
             <h2>{playlistName}</h2>
             <p>{noSongs} songs | {lenMinutes} minutes</p>
@@ -149,7 +149,7 @@ const PlaylistConfirm = () => {
                     This is it!
                 </Button>
             </div>
-        </div>
+        </main>
     );
 }
 
