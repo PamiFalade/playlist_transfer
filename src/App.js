@@ -10,8 +10,8 @@ function App() {
   const router = createBrowserRouter(
                       createRoutesFromElements(
                         <Route path="/" element={<RootLayout />} >
-                          <Route index element={<Landing />} />
-                          <Route path="/mi" element={<PlaylistConfirm />} />
+                          <Route path="/mi" element={<Landing />} />
+                          <Route index element={<PlaylistConfirm />} />
                         </Route>
                       ));
   return (
