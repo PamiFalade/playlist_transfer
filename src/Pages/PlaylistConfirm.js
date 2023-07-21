@@ -1,8 +1,42 @@
+import { useState } from "react";
 import "../Views/PlaylistConfirmViews.css";
 import { Button } from "react-bootstrap";
+import { useLoaderData } from "react-router-dom";
 
 
 const PlaylistConfirm = () => {
+
+
+    /// The share link to the playlist that will be transferred
+    const [playlistLink, setPlaylistLink] = useState("");
+    const handlePlaylistLink = (event) => {
+        setPlaylistLink(event.target.value);
+    };
+
+    /// The ID which will be extracted from the share link and used to search the playlist up
+    const [playlistID, setPlaylistID] = useState("");
+    const handlePlaylistID = (playlistID) => {
+        setPlaylistID(playlistID);
+    };
+
+    /// The music streaming platform that the playlist will be transferred from
+    const [source, setSource] = useState("");
+    const handleSource = (link) => {
+        if (link.startsWith("https://open.spotify.com/playlist/")){
+        setSource("spotify");
+        }
+        else if (link.startsWith("https://music.apple.com/ca/playlist/")){
+        //May need to change this because of the 'ca'
+        setSource("apple");
+        }
+        else if(link.startsWith("https://soundcloud.com/")){
+        setSource("soundcloud");
+        }
+    };
+
+    const [playlist, setPlaylist] = useState({});
+
+    const retrievedPlaylist = useLoaderData();
 
     const playlistName = "Made in Lagos";
     const noSongs = 13;
@@ -154,3 +188,7 @@ const PlaylistConfirm = () => {
 }
 
 export default PlaylistConfirm;
+
+export const playlistConfirmLoadeer = async () => {
+
+};
