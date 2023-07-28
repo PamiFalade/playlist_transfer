@@ -2,55 +2,11 @@ import { React, useState, useEffect, useRef, createRef } from "react"
 import "../Views/DestinationSelectViews.css";
 import PlatformSelector from "../Components/PlatformSelector";
 import { Button } from "react-bootstrap";
-import loadscript from "load-script";
 
 const DestinationSelect = () => {
 
     const [loggedIn, setLoggedIn] = useState(false);
     const handleLoggedIn = () => setLoggedIn(!loggedIn);
-
-    const [scPlayer, setSCPlayer] = useState(false);
-
-    const iframeRef = createRef();
-    let trackList = null;
-
-    useEffect(() => {
-        loadscript('https://w.soundcloud.com/player/api.js', () => {
-
-            // initialize player and store reference in state
-
-            const player = window.SC.Widget(iframeRef.current);
-            setSCPlayer(player);
-
-            player.bind(window.SC.Widget.Events.READY, () => {
-                function tryGetSounds() {
-                    player.getSounds((songList) => {
-                        var notComplete = false;
-                        for(var i=0, len=songList.length; i<len; i++){
-                            if(songList[i].title === undefined){
-                                notComplete = true;
-                                break;
-                            }
-                        }
-                        if (notComplete) {
-                            console.log('Not complete. Try again in 200ms ...');
-                            console.log(songList);
-                            setTimeout(function () {
-                              tryGetSounds();
-                            }, 200);
-                          } else {
-                            console.log('Complete!');
-                            trackList = songList
-                            console.log(trackList);
-                        }
-                    });
-                }
-                tryGetSounds();
-            });
-
-        });
-
-    }, []);
 
     const playlists = [
         {
@@ -116,9 +72,7 @@ const DestinationSelect = () => {
 
     return (
         <main>
-            <iframe ref={iframeRef} className="sc-widget" id="SCwidget" width="0px" height="200vh" allow="autoplay" style={{position:"absolute", left:"0", top:"0", fontSize:"40"}}
-                            src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/pamilerin-f/sets/rock-songs/&color=%23ff5500&auto_play=false&hide_related=false&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false" />
-                 
+                          
             {!loggedIn && (
                 <div>
                     <h1>Where are we transferring this playlist to?</h1>

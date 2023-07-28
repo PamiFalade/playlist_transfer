@@ -42,7 +42,9 @@ export const playlistLinkAction = async ({ request }) => {
   const playlistLink = submission.playlistLink;
 
   let playlistInfo = extractPlaylistInfo(playlistLink);
-  console.log(playlistInfo);
+
+  // Need to encode this so that it does not interfere with URL (i.e., SoundCloud) 
+  playlistInfo.ID = encodeURIComponent(playlistInfo.ID);
   
-  return redirect(`/playlist-confirm:${playlistInfo.source}-${playlistInfo.ID}`);
+  return redirect(`/playlist-confirm/${playlistInfo.source}-${playlistInfo.ID}`);
 };
