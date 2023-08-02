@@ -3,6 +3,7 @@ import { React, useState, useEffect, createRef } from "react";
 import { useParams, useLoaderData } from "react-router-dom";
 import loadscript from "load-script";
 import * as webService from "../models/webService";
+import * as sharedService from "../models/sharedService";
 
 
 
@@ -19,7 +20,8 @@ const PlaylistDetails = () => {
         username: "",
         id: "",
         tracks: [],
-        image: ""
+        image: "",
+        length: ""
     });
 
     /// Boolean that indicates if the playlist was found
@@ -28,81 +30,60 @@ const PlaylistDetails = () => {
     /// Call the method to set the song objects in the tracklist then update the state variables
     /// that hold the playlist and indicate if the playlist has been found
     const handleSetPlaylist = (retrievedPlaylist) => {
-        retrievedPlaylist.tracks = webService.extractSongInfo(sourcePlatform, retrievedPlaylist.tracks); // Get the important details of each song and put in general template
+        retrievedPlaylist = webService.extractSongInfo(sourcePlatform, retrievedPlaylist); // Get the important details of each song and put in general template
+
 
         setPlaylist(retrievedPlaylist);
         setFoundPlaylist(true);
      };
  
+    /// SoundCloud Widget player stuff
+    const [scPlayer, setSCPlayer] = useState(false);
+    const iframeRef = createRef();
     
-     /// Dummy data
-     const lenMinutes = 55;
- 
-     /// Helper function to truncate strings so that they fit in the display
-      const truncateString = (string, num) => {
-         var truncated = "";
-         if(string === undefined){
-            return "";
-         }
-         if(string.length > num)
-         {
-             truncated = string.slice(0, num);
-             truncated = truncated.trimEnd() + "...";
-         }
-         else 
-         {
-             truncated = string;
-         }
-         return truncated;
-      };
+    /// Function for loading the SoundCloud playlist through the SoundCloud Widget API
+    const loadSoundCloudPlaylist = () => {
+    loadscript('https://w.soundcloud.com/player/api.js', () => {
 
+            // initialize player and store reference in state
 
-      /// SoundCloud Widget player stuff
-      const [scPlayer, setSCPlayer] = useState(false);
-      const iframeRef = createRef();
-      
-      /// Function for loading the SoundCloud playlist through the SoundCloud Widget API
-      const loadSoundCloudPlaylist = () => {
-        loadscript('https://w.soundcloud.com/player/api.js', () => {
-  
-              // initialize player and store reference in state
-  
-              const player = window.SC.Widget(iframeRef.current);
-              setSCPlayer(player);
-  
-              player.bind(window.SC.Widget.Events.READY, () => {
-                  function tryGetSounds() {
-                      player.getSounds((songList) => {
-                          var notComplete = false;
-                          for(var i=0, len=songList.length; i<len; i++){
-                              if(songList[i].title === undefined){
-                                  notComplete = true;
-                                  break;
-                              }
-                          }
-                          if (notComplete) {
-                              console.log('Not complete. Try again in 200ms ...');
-                              setTimeout(function () {
-                                tryGetSounds();
-                              }, 200);
-                            } else {
-                              console.log('Complete!');
-                              let retrievedPlaylist = {
-                                playlistName: "name",
-                                username: "user",
-                                id: playlistID,
-                                tracks: [...songList],
-                                image: songList[0].artwork_url
-                              }
-                              handleSetPlaylist(retrievedPlaylist);
-                              console.log(songList);
-                          }
-                      });
-                  }
-                  tryGetSounds();
-              });
-          });
-      };
+            const player = window.SC.Widget(iframeRef.current);
+            setSCPlayer(player);
+
+            player.bind(window.SC.Widget.Events.READY, () => {
+                function tryGetSounds() {
+                    player.getSounds((songList) => {
+                        var notComplete = false;
+                        for(var i=0, len=songList.length; i<len; i++){
+                            if(songList[i].title === undefined){
+                                notComplete = true;
+                                break;
+                            }
+                        }
+                        if (notComplete) {
+                            console.log('Not complete. Try again in 200ms ...');
+                            setTimeout(function () {
+                            tryGetSounds();
+                            }, 200);
+                        } else {
+                            console.log('Complete!');
+                            let retrievedPlaylist = {
+                            playlistName: "name",
+                            username: "user",
+                            id: playlistID,
+                            tracks: [...songList],
+                            image: songList[0].artwork_url,
+                            length: ""
+                            }
+                            handleSetPlaylist(retrievedPlaylist);
+                            console.log(songList);
+                        }
+                    });
+                }
+                tryGetSounds();
+            });
+        });
+    };
 
       /// Call the webService methods that fetch the Spotify token and then fetch the requested playlist
       const loadSpotifyPlaylist = async() => {
@@ -153,15 +134,15 @@ const PlaylistDetails = () => {
                 <img id="playlistImage" src={playlist.image}/>
                 <h2>{playlist.playlistName}</h2>
                 <div id="playlistInfo">
-                    <p>{playlist.tracks.length} songs | {lenMinutes} minutes</p>
+                    <p>{playlist.tracks.length} songs | {playlist.length}</p>
                 </div>
                 <div className="tracklistDisplay">
                     {playlist.tracks.map((song, index) => {
                         return <div className="songDisplay" key={index}>
                         <img src={song.image}/>
                         <div className="songInfo" style={{marginLeft:"5%"}}>
-                            <h5>{truncateString(song.name, 26)}</h5>
-                            <p>{truncateString(song.artists, 45)}</p>
+                            <h5>{sharedService.truncateString(song.name, 26)}</h5>
+                            <p>{sharedService.truncateString(song.artists, 45)}</p>
                         </div>
                         </div>
                     })}

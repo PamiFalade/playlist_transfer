@@ -99,20 +99,20 @@ export const fetchPlaylist = (source, token, playlistID) => {
 
 /// Calls the appropriate platform's extractSongInfo() method, which gets the song's title, image, 
 /// artist(s), and length, and checks if it is explicit
-export const extractSongInfo = (source, songArray) => {
-  let formattedSongArray;
+export const extractSongInfo = (source, playlist) => {
+  let formattedPlaylist;
   switch(source) {
     case "spotify":
-      formattedSongArray = spotify.extractSongInfo(songArray);
+      formattedPlaylist = spotify.extractSongInfo(playlist);
       break;
     case "soundcloud":
-      formattedSongArray = soundcloud.extractSongInfo(songArray);
+      formattedPlaylist = soundcloud.extractSongInfo(playlist);
       break;
     default:
-      formattedSongArray = null;
+      return;
   }
   
-  return formattedSongArray;
+  return formattedPlaylist;
 };
 
 export const extractSongTitle = (source, title) => {

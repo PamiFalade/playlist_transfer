@@ -1,4 +1,5 @@
 import { Buffer } from "buffer";
+import * as sharedService from "../sharedService";
 
 const regexPattern = "(?<=playlist\/)[A-Za-z0-9]*";
 const clientID = "9a5c9f439d464286b0b08e0f40de4f4a";
@@ -15,6 +16,7 @@ export const extractPlaylistID = (link) => {
     return playlistID;
 };
 
+/// Gets the app's Spotify token using the Spotify API
 export const fetchToken = () => {
     let tokenResponse = fetch("https://accounts.spotify.com/api/token", {
         method: "POST",
@@ -60,16 +62,16 @@ export const fetchPlaylist = async (token, playlistID) => {
             playlistResponse = response.json();
         }).catch((error) => console.log(error));
 
-        console.log(playlistResponse);
     return playlistResponse;
 };
 
 /// Extracts the song's title, image, artist(s), and length, and checks if it is explicit from
-/// the tracklist that comes in the Spotify playlist object
-export const extractSongInfo = (songArray) => {
+/// the tracklist that comes in the Spotify playlist object.
+export const extractSongInfo = (playlist) => {
     let formattedSongArray = [];
+    let totalDuration = 0;  // The total run time of the playlist 
 
-    songArray.forEach(song => {
+    playlist.tracks.forEach(song => {
 
         // Get the list of artists for the song
         let artistList = song.track.artists[0].name;
@@ -79,15 +81,20 @@ export const extractSongInfo = (songArray) => {
             index++;
         }
 
+        totalDuration += song.track.duration_ms;
+
         // Add the song object to the array
         formattedSongArray.push({
             name: song.track.name,
             image: song.track.album.images[0].url,
             artists: artistList,
-            length: song.track.duration_ms,
+            length: sharedService.millisToHoursMinutesAndSeconds(song.track.duration_ms),
             isExplicit: song.track.explicit
         });
     });
 
-    return formattedSongArray;
+    playlist.tracks = [...formattedSongArray];
+    playlist.length = sharedService.millisToHoursMinutesAndSeconds(totalDuration);
+
+    return playlist;
 };

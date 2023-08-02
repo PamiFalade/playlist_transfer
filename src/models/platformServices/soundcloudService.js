@@ -1,3 +1,5 @@
+import * as sharedService from "../sharedService";
+
 const regexPattern = ".*(?=\\?si)";
 
 
@@ -18,18 +20,22 @@ export const extractSongTitle = (title) => {
 
 /// Extracts the song's title, image, artist(s), and length, and checks if it is explicit from
 /// the tracklist that comes in the SoundCloud playlist object
-export const extractSongInfo = (songArray) => {
+export const extractSongInfo = (playlist) => {
     let formattedSongArray = [];
+    let totalDuration = 0;  // The total run time of the playlist 
 
-    songArray.forEach(song => {
+    playlist.tracks.forEach(song => {
+        totalDuration += song.duration;
         formattedSongArray.push({
             name: extractSongTitle(song.title),
             image: song.artwork_url,
             artists: song.publisher_metadata.artist,
-            length: song.duration,
+            length: sharedService.millisToHoursMinutesAndSeconds(song.duration),
             isExplicit: song.publisher_metadata.explicit
         });
     });
 
-    return formattedSongArray;
+    playlist.tracks = [...formattedSongArray];
+    playlist.length = sharedService.millisToHoursMinutesAndSeconds(totalDuration);
+    return playlist;
 };
