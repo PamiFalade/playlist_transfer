@@ -4,7 +4,7 @@ import * as apple from "./platformServices/appleService";
 import * as deezer from "./platformServices/deezerService";
 import * as soundcloud from "./platformServices/soundcloudService";
 
-//Object used to store the clientIDs and secrets of the various platforms
+/// Object used to store the clientIDs and secrets of the various platforms
 const credentials = {
   spotify_clientID: "9a5c9f439d464286b0b08e0f40de4f4a",
   spotify_secret: "c24f98c34e26485db177b530895c1769",
@@ -14,7 +14,7 @@ const credentials = {
   deezer_secret: "64fa6e122f54fd5144866dd4e5bd8109",
 };
 
-//Object used to store the regex patterns needed to extract info from url's
+/// Object used to store the regex patterns needed to extract info from url's
 const regexes = {
   spotify_playlistID_regex: "(?<=t/)(.*?)(?=\\?)",
   apple_playlistID_regex: "",
@@ -73,3 +73,48 @@ export const extractPlaylistInfo = (link) => {
   
   return playlistInfo;
 };
+
+export const fetchToken = (source) => {
+  if (source === "spotify"){
+    return spotify.fetchToken();
+  }
+};
+
+/// Calls the appropriate platform's fetchPlaylist() method, which makes the API call 
+/// to get the details of the playlist
+export const fetchPlaylist = (source, token, playlistID) => {
+  let playlist;
+
+  switch(source){
+    case "spotify":
+      playlist = spotify.fetchPlaylist(token, playlistID);
+      break;
+    default:
+      playlist = null;
+  }
+
+  return playlist;
+
+};
+
+/// Calls the appropriate platform's extractSongInfo() method, which gets the song's title, image, 
+/// artist(s), and length, and checks if it is explicit
+export const extractSongInfo = (source, songArray) => {
+  let formattedSongArray;
+  switch(source) {
+    case "spotify":
+      formattedSongArray = spotify.extractSongInfo(songArray);
+      break;
+    case "soundcloud":
+      formattedSongArray = soundcloud.extractSongInfo(songArray);
+      break;
+    default:
+      formattedSongArray = null;
+  }
+  
+  return formattedSongArray;
+};
+
+export const extractSongTitle = (source, title) => {
+  return soundcloud.extractSongTitle(title);
+}

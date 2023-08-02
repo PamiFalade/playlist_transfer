@@ -1,74 +1,49 @@
+import "../Views/PlaylistDetailsViews.css";
 import { React, useState, useEffect, createRef } from "react";
 import { useParams, useLoaderData } from "react-router-dom";
 import loadscript from "load-script";
+import * as webService from "../models/webService";
 
 
 
 const PlaylistDetails = () => {
  
-    /// The playlist that will be transferred
-    const [playlist, setPlaylist] = useState({
-        playlistName: "",
-        username: "",
-        email: "",
-        id: "",
-        tracks: [],
-        img: ""
-    });
-
-    /// Boolean that indicates if the playlist was found
-    const [foundPlaylist, setFoundPlaylist] = useState(false);
-
-    const handleSetPlaylist = (retrievedPlaylist) => {
-        setPlaylist(retrievedPlaylist);
-        setFoundPlaylist(true);
-     };
-
-    // The tracklist that will be populated once the playlist has been fetcheds
-    const [trackList, setTrackList] = useState();
-    const handleAddTracklist = (newTrackList) => {
-        setTrackList(newTrackList);
-        console.log(trackList);
-    };
-
-    let playlistSongs;
-
     // Get the playlist's source platform and ID from the URL parameters
     const { id } = useParams(); 
     const sourcePlatform = id.substring(0, id.indexOf('-'));
     const playlistID = id.substring(id.indexOf('-') + 1);
 
+    /// The playlist that will be transferred
+    const [playlist, setPlaylist] = useState({
+        playlistName: "",
+        username: "",
+        id: "",
+        tracks: [],
+        image: ""
+    });
 
-     /// The share link to the playlist that will be transferred
-     const [playlistLink, setPlaylistLink] = useState("");
-     const handlePlaylistLink = (event) => {
-         setPlaylistLink(event.target.value);
+    /// Boolean that indicates if the playlist was found
+    const [foundPlaylist, setFoundPlaylist] = useState(false);
+
+    /// Call the method to set the song objects in the tracklist then update the state variables
+    /// that hold the playlist and indicate if the playlist has been found
+    const handleSetPlaylist = (retrievedPlaylist) => {
+        retrievedPlaylist.tracks = webService.extractSongInfo(sourcePlatform, retrievedPlaylist.tracks); // Get the important details of each song and put in general template
+
+        setPlaylist(retrievedPlaylist);
+        setFoundPlaylist(true);
      };
  
-     /// The music streaming platform that the playlist will be transferred from
-     const [source, setSource] = useState("");
-     const handleSource = (link) => {
-         if (link.startsWith("https://open.spotify.com/playlist/")){
-         setSource("spotify");
-         }
-         else if (link.startsWith("https://music.apple.com/ca/playlist/")){
-         //May need to change this because of the 'ca'
-         setSource("apple");
-         }
-         else if(link.startsWith("https://soundcloud.com/")){
-         setSource("soundcloud");
-         }
-     };
-
     
      /// Dummy data
-     const playlistName = "Made in Lagos";
-     const noSongs = 13;
      const lenMinutes = 55;
  
      /// Helper function to truncate strings so that they fit in the display
       const truncateString = (string, num) => {
          var truncated = "";
+         if(string === undefined){
+            return "";
+         }
          if(string.length > num)
          {
              truncated = string.slice(0, num);
@@ -81,14 +56,14 @@ const PlaylistDetails = () => {
          return truncated;
       };
 
+
       /// SoundCloud Widget player stuff
       const [scPlayer, setSCPlayer] = useState(false);
-
       const iframeRef = createRef();
-
-      /// Load the SoundCloud Widget API
-      useEffect(() => {
-          loadscript('https://w.soundcloud.com/player/api.js', () => {
+      
+      /// Function for loading the SoundCloud playlist through the SoundCloud Widget API
+      const loadSoundCloudPlaylist = () => {
+        loadscript('https://w.soundcloud.com/player/api.js', () => {
   
               // initialize player and store reference in state
   
@@ -112,14 +87,12 @@ const PlaylistDetails = () => {
                               }, 200);
                             } else {
                               console.log('Complete!');
-                              playlistSongs = [...songList];
                               let retrievedPlaylist = {
                                 playlistName: "name",
                                 username: "user",
-                                email: "user@email.com",
                                 id: playlistID,
                                 tracks: [...songList],
-                                img: "image"
+                                image: songList[0].artwork_url
                               }
                               handleSetPlaylist(retrievedPlaylist);
                               console.log(songList);
@@ -129,136 +102,74 @@ const PlaylistDetails = () => {
                   tryGetSounds();
               });
           });
+      };
+
+      /// Call the webService methods that fetch the Spotify token and then fetch the requested playlist
+      const loadSpotifyPlaylist = async() => {
+        let token;
+
+        await webService.fetchToken(sourcePlatform)
+            .then((tokenResponse) => {
+                token = tokenResponse;
+            })
+            .then(() => {
+                webService.fetchPlaylist(sourcePlatform, token, playlistID)
+                .then((playlistResponse) => {
+                    handleSetPlaylist({ 
+                        playlistName: playlistResponse.name,
+                        username: playlistResponse.owner.display_name,
+                        id: playlistID,
+                        tracks: [...playlistResponse.tracks.items],
+                        image: playlistResponse.images[0].url
+                     });
+                });
+            });        
+      };
+
+      /// Load the SoundCloud Widget API, or fetch the playlists through the other platforms' API's
+      useEffect(() => {
+          if(sourcePlatform === "soundcloud") {
+            loadSoundCloudPlaylist();
+          }
+          else if(sourcePlatform === "spotify") {
+            loadSpotifyPlaylist();
+          }
   
-      }, []);
- 
-     const songs = [
-         {
-             songID: 1,
-             songName: "Reckless",
-             songArtist: "Wizkid",
-             songLength: "3:53",
-             songImage: "https://upload.wikimedia.org/wikipedia/en/c/c2/Wizkid_-_Made_in_Lagos.png"
-         },
-         {
-             songID: 2,
-             songName: "Ginger (feat. Burna Boy)",
-             songArtist: "Wizkid",
-             songLength: "3:53",
-             songImage: "https://upload.wikimedia.org/wikipedia/en/c/c2/Wizkid_-_Made_in_Lagos.png"
-         },
-         {
-             songID: 3,
-             songName: "Longtime (feat. Skepta)",
-             songArtist: "Wizkid",
-             songLength: "3:53",
-             songImage: "https://upload.wikimedia.org/wikipedia/en/c/c2/Wizkid_-_Made_in_Lagos.png"
-         },
-         {
-             songID: 4,
-             songName: "Mighty Wine",
-             songArtist: "Wizkid",
-             songLength: "3:53",
-             songImage: "https://upload.wikimedia.org/wikipedia/en/c/c2/Wizkid_-_Made_in_Lagos.png"
-         },
-         {
-             songID: 5,
-             songName: "Blessed (feat. Damian \"Jr.Gong \" Marley)",
-             songArtist: "Wizkid",
-             songLength: "3:53",
-             songImage: "https://upload.wikimedia.org/wikipedia/en/c/c2/Wizkid_-_Made_in_Lagos.png"
-         },
-         {
-             songID: 6,
-             songName: "Smile (feat. H.E.R.)",
-             songArtist: "Wizkid",
-             songLength: "3:53",
-             songImage: "https://upload.wikimedia.org/wikipedia/en/c/c2/Wizkid_-_Made_in_Lagos.png"
-         },
-         {
-             songID: 7,
-             songName: "Piece of Me (feat. Ella Mai)",
-             songArtist: "Wizkid",
-             songLength: "3:53",
-             songImage: "https://upload.wikimedia.org/wikipedia/en/c/c2/Wizkid_-_Made_in_Lagos.png"
-         },
-         {
-             songID: 8,
-             songName: "No Stress",
-             songArtist: "Wizkid",
-             songLength: "3:53",
-             songImage: "https://upload.wikimedia.org/wikipedia/en/c/c2/Wizkid_-_Made_in_Lagos.png"
-         },
-         {
-             songID: 9,
-             songName: "True Love (feat. Tay Iwar & Projexx)",
-             songArtist: "Wizkid",
-             songLength: "3:53",
-             songImage: "https://upload.wikimedia.org/wikipedia/en/c/c2/Wizkid_-_Made_in_Lagos.png"
-         },
-         {
-             songID: 10,
-             songName: "No Sweet One",
-             songArtist: "Wizkid",
-             songLength: "3:53",
-             songImage: "https://upload.wikimedia.org/wikipedia/en/c/c2/Wizkid_-_Made_in_Lagos.png"
-         },
-         {
-             songID: 11,
-             songName: "Essence (feat. Tems)",
-             songArtist: "Wizkid",
-             songLength: "3:53",
-             songImage: "https://upload.wikimedia.org/wikipedia/en/c/c2/Wizkid_-_Made_in_Lagos.png"
-         },
-         {
-             songID: 12,
-             songName: "Roma (feat. Terri)",
-             songArtist: "Wizkid",
-             songLength: "3:53",
-             songImage: "https://upload.wikimedia.org/wikipedia/en/c/c2/Wizkid_-_Made_in_Lagos.png"
-         },
-         {
-             songID: 13,
-             songName: "Gyrate",
-             songArtist: "Wizkid",
-             songLength: "3:53",
-             songImage: "https://upload.wikimedia.org/wikipedia/en/c/c2/Wizkid_-_Made_in_Lagos.png"
-         },
-         {
-             songID: 14,
-             songName: "Grace",
-             songArtist: "Wizkid",
-             songLength: "3:53",
-             songImage: "https://upload.wikimedia.org/wikipedia/en/c/c2/Wizkid_-_Made_in_Lagos.png"
-         },
-     ];
- 
-    
+      }, [sourcePlatform, playlistID]);
+      
+
     return(
         <div>
-            { sourcePlatform === "soundcloud" &&
-                <iframe ref={iframeRef} className="sc-widget" id="SCwidget" width="0px" height="1000vh" allow="autoplay" style={{position:"absolute", left:"0", top:"0", fontSize:"40"}}
+
+            {/* SoundCloud Widget API */}
+            { foundPlaylist === false && sourcePlatform === "soundcloud" &&
+                <iframe ref={iframeRef} className="sc-widget" id="SCwidget" width="0px" height="500%" allow="autoplay" style={{position:"absolute", left:"0", top:"0", fontSize:"40"}}
                         src={`https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/${playlistID}/&color=%23ff5500&auto_play=false&hide_related=false&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false`} /> 
            }
-          { foundPlaylist === true && <div>
-                <img id="playlistImage" src="https://upload.wikimedia.org/wikipedia/en/c/c2/Wizkid_-_Made_in_Lagos.png"/>
+
+
+           { foundPlaylist === true &&
+            <div>
+                <img id="playlistImage" src={playlist.image}/>
                 <h2>{playlist.playlistName}</h2>
-                <p>{songs.length} songs | {lenMinutes} minutes</p>
+                <div id="playlistInfo">
+                    <p>{playlist.tracks.length} songs | {lenMinutes} minutes</p>
+                </div>
                 <div className="tracklistDisplay">
-                    {songs?.map((song, index) => {
+                    {playlist.tracks.map((song, index) => {
                         return <div className="songDisplay" key={index}>
-                        <img src={song.songImage}/>
+                        <img src={song.image}/>
                         <div className="songInfo" style={{marginLeft:"5%"}}>
-                            <h5>{truncateString(song.songName, 26)}</h5>
-                            <p>{truncateString(song.songArtist, 45)}</p>
+                            <h5>{truncateString(song.name, 26)}</h5>
+                            <p>{truncateString(song.artists, 45)}</p>
                         </div>
                         </div>
                     })}
                 </div>
             </div> }
+
         </div>
     );
 };
 
 export default PlaylistDetails;
-
