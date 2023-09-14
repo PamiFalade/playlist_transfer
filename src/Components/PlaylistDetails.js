@@ -85,8 +85,8 @@ const PlaylistDetails = () => {
         });
     };
 
-      /// Call the webService methods that fetch the Spotify token and then fetch the requested playlist
-      const loadSpotifyPlaylist = async() => {
+    /// Call the webService methods that fetch the Spotify token and then fetch the requested playlist
+    const loadSpotifyPlaylist = async() => {
         let token;
 
         await webService.fetchToken(sourcePlatform)
@@ -105,18 +105,18 @@ const PlaylistDetails = () => {
                      });
                 });
             });        
-      };
+    };
 
-      /// Load the SoundCloud Widget API, or fetch the playlists through the other platforms' API's
-      useEffect(() => {
-          if(sourcePlatform === "soundcloud") {
-            loadSoundCloudPlaylist();
-          }
-          else if(sourcePlatform === "spotify") {
-            loadSpotifyPlaylist();
-          }
-  
-      }, [sourcePlatform, playlistID]);
+    /// Load the SoundCloud Widget API, or fetch the playlists through the other platforms' API's
+    useEffect(() => {
+        if(sourcePlatform === "soundcloud") {
+        loadSoundCloudPlaylist();
+        }
+        else if(sourcePlatform === "spotify") {
+        loadSpotifyPlaylist();
+        }
+
+    }, [sourcePlatform, playlistID]);
       
 
     return(

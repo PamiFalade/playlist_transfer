@@ -115,6 +115,46 @@ export const extractSongInfo = (source, playlist) => {
   return formattedPlaylist;
 };
 
+
+/// Get the user to log in to their account on the appropriate platform and authorize the app to have the specified access 
+export const redirectToUserAuthorization = (source) => {
+  console.log(source);
+  switch(source){
+    case "spotify":
+      spotify.redirectToUserAuthorization();
+      break;
+    default:
+      break;
+  };
+
+};
+
+/// Get the token that is provided once the user authorizes the application
+export const getUserAuthorizationToken = (source) => {
+  let authToken = spotify.getUserAuthorizationToken();
+
+  return authToken;
+};
+
+/// Use the user authorization token to get their account i.e., the account name, their playlists
+export const getUserAccount = (token, source) => {
+  let userAccount;
+  switch(source){
+    case "spotify":
+      userAccount = spotify.getUserAccount(token);
+      break;
+    case "apple":
+      // userDetails = apple.getUserDetails(token);
+      break;
+    default:
+      break;
+  };
+
+  return userAccount;
+};
+
+/// Used to extract the song's title from the published title
+/// Seems to be exclusively an issue for SoundCloud
 export const extractSongTitle = (source, title) => {
   return soundcloud.extractSongTitle(title);
-}
+};

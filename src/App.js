@@ -12,11 +12,16 @@ function App() {
   const router = createBrowserRouter(
                       createRoutesFromElements(
                         <Route path="" element={<RootLayout />} >
+                          {/* <Route path="first" element={<Landing />} action={playlistLinkAction}/> */}
+
                           <Route index element={<Landing />} action={playlistLinkAction}/>
                           <Route path="playlist-confirm" element={<PlaylistConfirm />} >
                             <Route path=":id" element={<PlaylistDetails />} />
                           </Route>
                           <Route path="destination-select" element={<DestinationSelect />} />
+
+                          {/* <Route index element={<DestinationSelect />} /> */}
+
                         </Route>
                       ));
   return (
