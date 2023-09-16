@@ -158,3 +158,8 @@ export const getUserAccount = (token, source) => {
 export const extractSongTitle = (source, title) => {
   return soundcloud.extractSongTitle(title);
 };
+
+
+export const transferPlaylist = (token, userID, playlist) => {
+  spotify.transferPlaylist(token, userID, playlist);
+};

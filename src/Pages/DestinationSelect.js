@@ -1,4 +1,5 @@
 import { React, useState, useEffect, useRef, createRef } from "react"
+import { useLocation } from "react-router-dom";
 import "../Views/DestinationSelectViews.css";
 import PlatformSelector from "../Components/PlatformSelector";
 import { Button } from "react-bootstrap";
@@ -13,16 +14,52 @@ const DestinationSelect = () => {
     // State variable that contains data from the account that the user is currently logged into
     const [userAccount, setUserAccount] = useState({
         username: "",
+        userID: "",
         profileImg: "",
-        playlists: []
+        playlists: [],
+        token: ""
     });
 
+    // State variable that holds the access token for the logged in user
+    const [token, setToken] = useState("");
+
+    // The playlist that will be transferred
+    const [playlist, setPlaylist] = useState({
+        playlistName: "",
+        username: "",
+        id: "",
+        tracks: [],
+        image: "",
+        length: ""
+    });
+    // Copy constructor for the state version of the playlist
+    const handleSetPlaylist = (playlistData) => {
+        setPlaylist({
+            playlistName: playlistData.playlistName,
+            username: playlistData.username,
+            id: playlistData.id,
+            tracks: playlistData.tracks,
+            image: playlistData.image,
+            length: playlistData.length
+        });
+    };
+
+    // Begin the transferring of the playlist
+    const beginTransferPlaylist = () => {
+        // Step 1: Retrieve playlist data from sessionStorage
+        handleSetPlaylist(JSON.parse(sessionStorage.getItem("playlist")));
+
+        // Step 2: call the transferPlaylist function from webService
+        webService.transferPlaylist(token, userAccount.userID, JSON.parse(sessionStorage.getItem("playlist")));
+    };
 
     // Get the user's access token once they log in and store it in the state variable
     useEffect(() => {
         if (window.location.search) {
             webService.getUserAuthorizationToken().then((token) => {
-                if (token != "") {
+                if (token != "" && token != null) {
+                    setToken(token);
+                    console.log(token);
                     webService.getUserAccount(token, "spotify").then(
                         (retrievedUser) => {
                             setUserAccount(retrievedUser);
@@ -57,7 +94,8 @@ const DestinationSelect = () => {
                     </div>
                     <div id="userPlaylistsDisplay">
                         {userAccount.playlists.map((playlist, index) => {
-                            return <div className="playlistCard" key={playlist.playlistID} >
+                            index++;
+                            return <div className="playlistCard" key={index} >
                                 <img src={playlist.image} />
                                 <p>{playlist.playlistName}</p>
                                 <small>{playlist.playlistOwner}</small>
@@ -69,7 +107,7 @@ const DestinationSelect = () => {
                             Go Back
                         </Button>
 
-                        <Button variant="primary" id="transferButton">
+                        <Button variant="primary" id="transferButton" onClick={beginTransferPlaylist}>
                             Transfer Playlist
                         </Button>
                     </div>

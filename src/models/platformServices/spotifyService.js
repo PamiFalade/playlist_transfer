@@ -13,6 +13,7 @@ const SCOPES = [
   "playlist-read-private",
   "playlist-read-collaborative",
   "playlist-modify-public",
+  "playlist-modify-private"
 ];
 
 /// Used to extract the playlist ID from the Spotify share link using Regex
@@ -162,6 +163,7 @@ export const getUserAccount = async(token) => {
   let userAuthToken = token;
   let userAccount = {
     username: "",
+    userID: "",
     profileImg: "",
     playlists: []
   };
@@ -169,6 +171,7 @@ export const getUserAccount = async(token) => {
   // Get the user's username and profile image
   await getUserProfile(userAuthToken).then((profileResponse) => {
     userAccount.username = profileResponse.display_name;
+    userAccount.userID = profileResponse.id;
     userAccount.profileImg = profileResponse.images[0].url;
   });
 
@@ -250,11 +253,85 @@ export const extractSongInfo = (playlist) => {
     return playlist;
 };
 
-const searchItem = () => {
+/// Create the playlist on Spotify
+const createPlaylist = (token, userID, playlistName) => {
+  console.log(token);
+  let newPlaylist = fetch(`https://api.spotify.com/v1/users/${userID}/playlists`, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + token.access_token,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({    // Must stringify the object for the body, or else it won't work
+      "name": playlistName,
+      "description": "Playlist copied by playlist-transfer",
+    })
+  }).then(response => {
+    if(response.ok){
+      console.log("Successfully created the playlist on Spotify!");
+    }
+    else {
+      console.log("Error with creating playlist on Spotify");
+    }
+    return response.json();
+  }).catch(error => console.log(error));
 
-  let songName = encodeURI("song name");
-  let artist = "artiste";
-  let year = "year";
-  let type = "track type";
-  let queryToEncode = `remaster% track:${songName}% artist:${artist}% type=${type}`
+  let newPlaylistID = newPlaylist.id;   // The Spotify ID for the playlist, which is needed to add the tracks to it
+  return newPlaylistID;
+};
+
+/// Search the track on Spotify and retrieve its URI, which will be used to add the track to the playlist
+const searchTrack = (token, song) => {
+
+  let queryToEncode = `remaster% track:${song.name}% artist:${song.artists}% type=${song.type}`;
+  let searchResults = fetch(`https://api.spotify.com/v1/search?q=${queryToEncode}`, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + token.access_token
+    }
+  }).then(response => {
+    if(response.ok) {
+      console.log("Successfully searched track on Spotify!");
+    }
+    else {
+      console.log("Error with searching on Spotify");
+    }
+    return response.json();
+  }).then(searchResponse => {
+    return searchResponse.tracks.items;
+  });
+  
+  return searchResults[0].uri;
+};
+
+/// Add the tracks to the Spotify playlist
+const addTracksToPlaylist = (token, tracksURIArray, playlistID) => {
+  
+  fetch(`https://api.spotify.com/v1/playlists/${playlistID}/tracks`, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + token.access_token,
+      "Content-type": "application/json"
+    },
+    body: `uris: ${tracksURIArray.concat().toString()}`
+  }).then(response => console.log(response));
+};
+
+/// Execute the copying of the playlist to the specified Spotify account
+export const transferPlaylist = (token, userID, playlist) => {
+  console.log(token);
+  let newPlaylistID = "";   // The ID of the new playlist, which is necessary for adding tracks to it
+  let newPlaylistName = playlist.playlistName + " - copy";  // The name that will be used for the newly-created playlist
+  let trackURIs = [playlist.tracks.length];
+
+  // Step 1: Create the playlist in the Spotify account and retrieve its Spotify ID
+  newPlaylistID = createPlaylist(token, userID, newPlaylistName);
+
+  // // Step 2: Find and retrieve the Spotify URI's for all the tracks that will be put into the transferred playlist
+  // playlist.tracks.forEach(song => {
+  //   trackURIs.push(searchTrack(token, song));
+  // });
+
+  // // Step 3: Add all of the tracks to the newly-created Spotify playlist
+  // addTracksToPlaylist(token, trackURIs, newPlaylistID);
 };

@@ -1,6 +1,6 @@
 import "../Views/PlaylistDetailsViews.css";
 import { React, useState, useEffect, createRef } from "react";
-import { useParams, useLoaderData } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import loadscript from "load-script";
 import * as webService from "../models/webService";
 import * as sharedService from "../models/sharedService";
@@ -13,6 +13,19 @@ const PlaylistDetails = () => {
     const { id } = useParams(); 
     const sourcePlatform = id.substring(0, id.indexOf('-'));
     const playlistID = id.substring(id.indexOf('-') + 1);
+    
+    // Move on to the Destination Select page once the playlist has been confirmed
+    const navigate = useNavigate();
+
+    // Save playlist data to sessionStorage to make it persistent, so that it can be accessed in the DestinationSelect page.
+    // Then navigate to DestinationSelect page
+    const openDestinationSelect = () => {
+        // Save all the playlist data to session storage
+        sessionStorage.setItem("playlist", JSON.stringify(playlist));
+
+        // Go to DestinationSelect page
+        navigate("/destination-select");
+    };
 
     /// The playlist that will be transferred
     const [playlist, setPlaylist] = useState({
@@ -76,7 +89,6 @@ const PlaylistDetails = () => {
                             length: ""
                             }
                             handleSetPlaylist(retrievedPlaylist);
-                            console.log(songList);
                         }
                     });
                 }
@@ -147,6 +159,16 @@ const PlaylistDetails = () => {
                         </div>
                     })}
                 </div>
+
+                <div className="confirmButtons">
+                <button>
+                    Go Back
+                </button>
+
+                <button onClick={openDestinationSelect}>
+                    This is it!
+                </button>
+            </div>
             </div> }
 
         </div>
@@ -154,3 +176,4 @@ const PlaylistDetails = () => {
 };
 
 export default PlaylistDetails;
+

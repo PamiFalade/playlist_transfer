@@ -31,7 +31,9 @@ export const extractSongInfo = (playlist) => {
             image: song.artwork_url,
             artists: song.publisher_metadata.artist,
             length: sharedService.millisToHoursMinutesAndSeconds(song.duration),
-            isExplicit: song.publisher_metadata.explicit
+            isExplicit: song.publisher_metadata.explicit,
+            release_date: song.created_at,
+            type: song.kind
         });
     });
 
