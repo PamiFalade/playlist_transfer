@@ -14,7 +14,7 @@ export const extractPlaylistID = (link) => {
 /// of the song's title, so this is to get just the song's name
 export const extractSongTitle = (title) => {
     if(title != undefined){
-        return title.substring(title.indexOf('-') + 1);
+        return title.substring(title.indexOf('-') + 1).trim();
     }
 } 
 
@@ -28,8 +28,10 @@ export const extractSongInfo = (playlist) => {
         totalDuration += song.duration;
         formattedSongArray.push({
             name: extractSongTitle(song.title),
+            album: song.publisher_metadata.album_title,
             image: song.artwork_url,
             artists: song.publisher_metadata.artist,
+            length_ms: song.duration,
             length: sharedService.millisToHoursMinutesAndSeconds(song.duration),
             isExplicit: song.publisher_metadata.explicit,
             release_date: song.created_at,

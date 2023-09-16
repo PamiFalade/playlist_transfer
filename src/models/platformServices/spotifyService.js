@@ -47,7 +47,6 @@ export const fetchToken = () => {
 
 //Redirect to the Spotify API's user login and authorization page via
 export const redirectToUserAuthorization = () => {
-  console.log("here");
   let authorizeURL = spotify_authorize_endpoint + "?client_id=" + clientID;
   authorizeURL += "&response_type=code";
   authorizeURL += "&redirect_uri=" + encodeURI(redirect_uri);
@@ -218,6 +217,18 @@ export const fetchPlaylist = async (token, playlistID) => {
     return playlistResponse;
 };
 
+// Helper function to get the names of the artists on a song and put them in a comma-separated string
+const extractSongArtists = (song) => {
+  let artistList = song.track.artists[0].name;
+  let index = 1;
+  while(index < song.track.artists.length) {
+      artistList += ", " + song.track.artists[index].name;
+      index++;
+  }
+
+  return artistList;
+};
+
 /// Extracts the song's title, image, artist(s), and length, and checks if it is explicit from
 /// the tracklist that comes in the Spotify playlist object.
 export const extractSongInfo = (playlist) => {
@@ -226,20 +237,17 @@ export const extractSongInfo = (playlist) => {
 
     playlist.tracks.forEach(song => {
         // Get the list of artists for the song
-        let artistList = song.track.artists[0].name;
-        let index = 1;
-        while(index < song.track.artists.length) {
-            artistList += ", " + song.track.artists[index].name;
-            index++;
-        }
+        let artistList = extractSongArtists(song);
 
         totalDuration += song.track.duration_ms;
 
         // Add the song object to the array
         formattedSongArray.push({
             name: song.track.name,
+            album: song.track.album.name,
             image: song.track.album.images[0].url,
             artists: artistList,
+            length_ms: song.track.duration_ms,
             length: sharedService.millisToHoursMinutesAndSeconds(song.track.duration_ms),
             isExplicit: song.track.explicit,
             release_date: song.track.album.release_date,
@@ -281,10 +289,11 @@ const createPlaylist = (token, userID, playlistName) => {
 };
 
 /// Search the track on Spotify and retrieve its URI, which will be used to add the track to the playlist
-const searchTrack = (token, song) => {
+const searchTrack = async(token, song) => {
 
-  let queryToEncode = `remaster% track:${song.name}% artist:${song.artists}% type=${song.type}`;
-  let searchResults = fetch(`https://api.spotify.com/v1/search?q=${queryToEncode}`, {
+  let queryToEncode = `remaster%20track:${song.name}%20artist:${song.artists}`;
+  let encodedQuery = encodeURIComponent(queryToEncode);
+  let results = fetch(`https://api.spotify.com/v1/search?q=${encodedQuery}&type=track`, {
     method: "GET",
     headers: {
       Authorization: "Bearer " + token.access_token
@@ -297,12 +306,27 @@ const searchTrack = (token, song) => {
       console.log("Error with searching on Spotify");
     }
     return response.json();
-  }).then(searchResponse => {
-    return searchResponse.tracks.items;
-  });
-  
-  return searchResults[0].uri;
+  }).catch(error => console.log(error));
+
+  return results;
 };
+
+/// Helper function that makes sure that the exact song is found
+const findTrack = (results, song) => {
+  let trackURI = "";       // The track that will be put into the playlist
+  let searchResults = [...results.items];
+
+  for(let i=0; i<searchResults.length; i++) {   // Use a for loop instead of a forEach so that we can 'break' out once we've found the right track
+    if((searchResults[i].name === song.name || searchResults[i].album.name === song.album)
+        && searchResults[i].explicit === song.isExplicit) {   // Check for the right version (i.e., the search result is from the same album and has the same Explicit rating)
+      trackURI = searchResults[i].uri;
+      break;
+    }
+  };
+
+  return {songName: song.name, spotifyURI: trackURI};
+};
+
 
 /// Add the tracks to the Spotify playlist
 const addTracksToPlaylist = (token, tracksURIArray, playlistID) => {
@@ -319,19 +343,21 @@ const addTracksToPlaylist = (token, tracksURIArray, playlistID) => {
 
 /// Execute the copying of the playlist to the specified Spotify account
 export const transferPlaylist = (token, userID, playlist) => {
-  console.log(token);
   let newPlaylistID = "";   // The ID of the new playlist, which is necessary for adding tracks to it
   let newPlaylistName = playlist.playlistName + " - copy";  // The name that will be used for the newly-created playlist
-  let trackURIs = [playlist.tracks.length];
+  let tracksURIArray = [];
 
   // Step 1: Create the playlist in the Spotify account and retrieve its Spotify ID
-  newPlaylistID = createPlaylist(token, userID, newPlaylistName);
+  // newPlaylistID = createPlaylist(token, userID, newPlaylistName);
 
-  // // Step 2: Find and retrieve the Spotify URI's for all the tracks that will be put into the transferred playlist
-  // playlist.tracks.forEach(song => {
-  //   trackURIs.push(searchTrack(token, song));
-  // });
+  // Step 2: Find and retrieve the Spotify URI's for all the tracks that will be put into the transferred playlist
+  playlist.tracks.forEach(song => {
+    searchTrack(token, song).
+      then((searchResults => {
+      tracksURIArray.push(findTrack(searchResults.tracks, song));
+    }));
+  });
 
   // // Step 3: Add all of the tracks to the newly-created Spotify playlist
-  // addTracksToPlaylist(token, trackURIs, newPlaylistID);
+  // addTracksToPlaylist(token, tracksURIArray, newPlaylistID);
 };

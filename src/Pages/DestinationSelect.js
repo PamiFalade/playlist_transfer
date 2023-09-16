@@ -59,7 +59,6 @@ const DestinationSelect = () => {
             webService.getUserAuthorizationToken().then((token) => {
                 if (token != "" && token != null) {
                     setToken(token);
-                    console.log(token);
                     webService.getUserAccount(token, "spotify").then(
                         (retrievedUser) => {
                             setUserAccount(retrievedUser);
