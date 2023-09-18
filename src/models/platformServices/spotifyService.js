@@ -25,6 +25,7 @@ export const extractPlaylistID = (link) => {
 };
 
 /// Gets the app's Spotify token using the Spotify API
+/// Spotify API: https://developer.spotify.com/documentation/web-api/tutorials/client-credentials-flow
 export const fetchToken = () => {
     let tokenResponse = fetch("https://accounts.spotify.com/api/token", {
         method: "POST",
@@ -45,7 +46,8 @@ export const fetchToken = () => {
     return tokenResponse;
 };
 
-//Redirect to the Spotify API's user login and authorization page via
+/// Redirect to the Spotify API's user login and authorization page
+/// Spotify API: https://developer.spotify.com/documentation/web-api/tutorials/code-pkce-flow
 export const redirectToUserAuthorization = () => {
   let authorizeURL = spotify_authorize_endpoint + "?client_id=" + clientID;
   authorizeURL += "&response_type=code";
@@ -53,7 +55,6 @@ export const redirectToUserAuthorization = () => {
   authorizeURL += "&show_dialog=true";
   authorizeURL += "&scope=" + SCOPES.join(" ");
 
-  console.log(authorizeURL);
   window.location.href = authorizeURL; // Show Spotify's authorization screen.
 };
   
@@ -69,6 +70,7 @@ const getCode = () => {
 };
 
 /// Retrieve token that is returned when user logs in and authorizes the app
+/// Spotify API: https://developer.spotify.com/documentation/web-api/tutorials/code-flow
 export const getUserAuthorizationToken = () => {
   let code = getCode(); //Get the code from the return of the login
 
@@ -116,6 +118,7 @@ export const getUserAuthorizationToken = () => {
 };
 
 /// Fetch the user's account name and profile picture
+/// Spotify API: https://developer.spotify.com/documentation/web-api/reference/get-current-users-profile
 const getUserProfile = async (token) => {
   let profileResponse = fetch("https://api.spotify.com/v1/me", {
     method: "GET",
@@ -137,6 +140,7 @@ const getUserProfile = async (token) => {
 };
 
 /// Fetch the user's list of playlists
+/// Spotify API: https://developer.spotify.com/documentation/web-api/reference/get-a-list-of-current-users-playlists
 const getUserPlaylists = async (token) => {
   let playlistResponse = fetch("https://api.spotify.com/v1/me/playlists", {
     method: "GET",
@@ -178,6 +182,7 @@ export const getUserAccount = async(token) => {
   await getUserPlaylists(userAuthToken).then((playlistResponse) => {
 
     playlistResponse.items.forEach(playlist => {
+
       userAccount.playlists.push({
         playlistName: playlist.name,
         username: playlist.owner.display_name,
@@ -193,11 +198,33 @@ export const getUserAccount = async(token) => {
   return userAccount;
 };
 
+/// Fetch the tracks that were not retrieved from the playlist due to the limit
+/// https://developer.spotify.com/documentation/web-api/reference/get-playlists-tracks 
+const fetchExtraTracks = async (token, playlistID, offset) => {
+  console.log("extraz");
+  let extraTracks = fetch(`https://api.spotify.com/v1/playlists/${playlistID}/tracks?limit=50&offset=${offset}`, 
+  {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + token.access_token
+    }
+  }).then(response => {
+    if(response.ok){
+      console.log("Successfully got the next batch of tracks!");
+    }
+    else {
+      console.log("Error with getting the next batch of tracks...");
+    }
+    return response.json();
+  }).catch(error => console.log(error));
+
+  return extraTracks;
+};
+
 /// Fetch the requested playlist with the app's Spotify token and the playlist's ID
+/// Spotify API: https://developer.spotify.com/documentation/web-api/reference/get-playlist
 export const fetchPlaylist = async (token, playlistID) => {
-    let playlistResponse;
-    
-    await fetch(`https://api.spotify.com/v1/playlists/${playlistID}`, 
+    let playlist = fetch(`https://api.spotify.com/v1/playlists/${playlistID}`, 
         {
             method: "GET",
             headers: {
@@ -211,10 +238,28 @@ export const fetchPlaylist = async (token, playlistID) => {
             else {
                 console.log("Error with retrieving Spotify playlist");
             }
-            playlistResponse = response.json();
+            return response.json();
+        }).then(playlistResponse => {
+            let totalTracks = playlistResponse.tracks.total;
+            let fetchedTracks = playlistResponse.tracks.items.length;
+            while (fetchedTracks < totalTracks) {
+              fetchExtraTracks(token, playlistID, fetchedTracks)
+                .then(res => {
+                  if(res.ok) {
+                    return res.json();
+                  }
+                  else {
+                    console.log("Error with getting tracks after #" + fetchedTracks);
+                  }
+                }).then(extraTracksResponse => {
+                  console.log(fetchedTracks);
+                  fetchedTracks += extraTracksResponse.total;
+                  playlistResponse.tracks.items.push.apply(playlistResponse.tracks.items, extraTracksResponse.items);
+                });
+            }
         }).catch((error) => console.log(error));
 
-    return playlistResponse;
+    return playlist;
 };
 
 // Helper function to get the names of the artists on a song and put them in a comma-separated string
@@ -262,8 +307,8 @@ export const extractSongInfo = (playlist) => {
 };
 
 /// Create the playlist on Spotify
+/// https://developer.spotify.com/documentation/web-api/reference/create-playlist
 const createPlaylist = (token, userID, playlistName) => {
-  console.log(token);
   let newPlaylist = fetch(`https://api.spotify.com/v1/users/${userID}/playlists`, {
     method: "POST",
     headers: {
@@ -284,11 +329,11 @@ const createPlaylist = (token, userID, playlistName) => {
     return response.json();
   }).catch(error => console.log(error));
 
-  let newPlaylistID = newPlaylist.id;   // The Spotify ID for the playlist, which is needed to add the tracks to it
-  return newPlaylistID;
+  return newPlaylist;
 };
 
 /// Search the track on Spotify and retrieve its URI, which will be used to add the track to the playlist
+/// Spotify API: https://developer.spotify.com/documentation/web-api/reference/search
 const searchTrack = async(token, song) => {
 
   let queryToEncode = `remaster%20track:${song.name}%20artist:${song.artists}`;
@@ -329,35 +374,64 @@ const findTrack = (results, song) => {
 
 
 /// Add the tracks to the Spotify playlist
+/// Spotify API: https://developer.spotify.com/documentation/web-api/reference/add-tracks-to-playlist
 const addTracksToPlaylist = (token, tracksURIArray, playlistID) => {
-  
-  fetch(`https://api.spotify.com/v1/playlists/${playlistID}/tracks`, {
+
+  let addTracksResponse = fetch(`https://api.spotify.com/v1/playlists/${playlistID}/tracks`, {
     method: "POST",
     headers: {
       Authorization: "Bearer " + token.access_token,
-      "Content-type": "application/json"
+      "Content-Type": "application/json"
     },
-    body: `uris: ${tracksURIArray.concat().toString()}`
-  }).then(response => console.log(response));
+    body: JSON.stringify({
+      "uris": tracksURIArray,
+      "position": 0
+    })
+  }).then(response => {
+    if(response.ok) {
+      console.log("Successfully transferred tracks to Spotify playlist!");
+    }
+    else {
+      console.log("Error with adding tracks to Spotify playlist...");
+    }
+    return response.json();
+  }).catch(error => console.log(error));
+
+  return addTracksResponse;
 };
 
 /// Execute the copying of the playlist to the specified Spotify account
-export const transferPlaylist = (token, userID, playlist) => {
+export const transferPlaylist = async (token, userID, playlist) => {
   let newPlaylistID = "";   // The ID of the new playlist, which is necessary for adding tracks to it
   let newPlaylistName = playlist.playlistName + " - copy";  // The name that will be used for the newly-created playlist
   let tracksURIArray = [];
+  let missingTracks = [];     // List of songs that could not be found reliably on Spotify
 
-  // Step 1: Create the playlist in the Spotify account and retrieve its Spotify ID
-  // newPlaylistID = createPlaylist(token, userID, newPlaylistName);
-
-  // Step 2: Find and retrieve the Spotify URI's for all the tracks that will be put into the transferred playlist
-  playlist.tracks.forEach(song => {
-    searchTrack(token, song).
-      then((searchResults => {
-      tracksURIArray.push(findTrack(searchResults.tracks, song));
-    }));
+  // Step 1: Find and retrieve the Spotify URI's for all the tracks that will be put into the transferred playlist
+  await playlist.tracks.forEach(song => {
+    searchTrack(token, song)
+      .then((searchResults => {
+        let track = findTrack(searchResults.tracks, song);
+        if(track.spotifyURI !== ""){
+          tracksURIArray.push(track.spotifyURI);
+        }
+        else {
+          missingTracks.push(track.songName);
+        }
+      }));
   });
 
-  // // Step 3: Add all of the tracks to the newly-created Spotify playlist
-  // addTracksToPlaylist(token, tracksURIArray, newPlaylistID);
+  // Step 2: Create the playlist in the Spotify account and retrieve its Spotify ID
+  await createPlaylist(token, userID, newPlaylistName)
+    .then(newPlaylistResponse => {
+      newPlaylistID = newPlaylistResponse.id;
+  });
+
+
+  // Step 3: Add all of the tracks to the newly-created Spotify playlist
+  let response = addTracksToPlaylist(token, tracksURIArray, newPlaylistID)
+    .then(response => {
+      console.log(response);
+      return response;
+    });
 };

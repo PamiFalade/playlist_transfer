@@ -74,6 +74,7 @@ export const extractPlaylistInfo = (link) => {
   return playlistInfo;
 };
 
+/// Fetch the user's token after they have logged in and authorized the application to take actions on their account
 export const fetchToken = (source) => {
   if (source === "spotify"){
     return spotify.fetchToken();
