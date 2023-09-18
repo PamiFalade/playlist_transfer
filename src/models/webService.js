@@ -88,7 +88,7 @@ export const fetchPlaylist = (source, token, playlistID) => {
 
   switch(source){
     case "spotify":
-      playlist = spotify.fetchPlaylist(token, playlistID);
+      playlist = spotify.fetchPlaylistAndTracks(token, playlistID);
       break;
     default:
       playlist = null;

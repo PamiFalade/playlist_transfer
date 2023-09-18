@@ -108,6 +108,7 @@ const PlaylistDetails = () => {
             .then(() => {
                 webService.fetchPlaylist(sourcePlatform, token, playlistID)
                 .then((playlistResponse) => {
+                    console.log(playlistResponse);
                     handleSetPlaylist({ 
                         playlistName: playlistResponse.name,
                         username: playlistResponse.owner.display_name,
