@@ -313,8 +313,6 @@ let count = 1;
             release_date: song.track.album.release_date,
             type: song.type
         });
-        if(song.name==="In The End"){
-          console.log(formattedSongArray[-1]);}
     });
 
     playlist.tracks = [...formattedSongArray];
@@ -446,9 +444,30 @@ export const transferPlaylist = async (token, userID, playlist) => {
 
 
   // Step 3: Add all of the tracks to the newly-created Spotify playlist
-  addTracksToPlaylist(token, tracksURIArray, newPlaylistID)
+  // You can add a maximum of 100 songs at once
+  if(playlist.tracks.length <= 100) {
+    addTracksToPlaylist(token, tracksURIArray, newPlaylistID)
     .then(response => {
       console.log(response);
       return response;
     });
+  }
+  else {
+    let numTracksAdded = 0;
+    while(tracksURIArray.length - numTracksAdded > 100) {
+      await addTracksToPlaylist(token, tracksURIArray.slice(numTracksAdded, numTracksAdded+100), newPlaylistID)
+      .then(response => {
+        console.log(response);
+        return response;
+      });
+      numTracksAdded += 100;
+    }
+
+    addTracksToPlaylist(token, tracksURIArray.slice(numTracksAdded), newPlaylistID)
+      .then(response => {
+        console.log(response);
+        return response;
+      });
+  }
+  
 };
