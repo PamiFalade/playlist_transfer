@@ -147,7 +147,7 @@ const PlaylistDetails = () => {
                 <div className="tracklistDisplay">
                     {playlist.tracks.map((song, index) => {
                         return <div className="songDisplay" key={index}>
-                        <img src={song.image}/>
+                        <img src={song.image !== "" ? song.image : sharedService.missingTrackImg}/>
                         <div className="songInfo" style={{marginLeft:"5%"}}>
                             <h5>{sharedService.truncateString(song.name, 26)}</h5>
                             <p>{sharedService.truncateString(song.artists, 45)}</p>

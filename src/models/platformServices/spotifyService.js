@@ -294,7 +294,7 @@ const extractSongArtists = (song) => {
 export const extractSongInfo = (playlist) => {
     let formattedSongArray = [];
     let totalDuration = 0;  // The total run time of the playlist 
-
+let count = 1;
     playlist.tracks.forEach(song => {
         // Get the list of artists for the song
         let artistList = extractSongArtists(song);
@@ -305,7 +305,7 @@ export const extractSongInfo = (playlist) => {
         formattedSongArray.push({
             name: song.track.name,
             album: song.track.album.name,
-            image: song.track.album.images[0].url,
+            image: song.track.album.images.length > 0 ? song.track.album.images[0].url : "",
             artists: artistList,
             length_ms: song.track.duration_ms,
             length: sharedService.millisToHoursMinutesAndSeconds(song.track.duration_ms),
@@ -313,6 +313,8 @@ export const extractSongInfo = (playlist) => {
             release_date: song.track.album.release_date,
             type: song.type
         });
+        if(song.name==="In The End"){
+          console.log(formattedSongArray[-1]);}
     });
 
     playlist.tracks = [...formattedSongArray];

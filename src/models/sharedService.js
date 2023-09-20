@@ -1,4 +1,5 @@
-
+/// Image to use if a song does not have an image
+export const missingTrackImg = "https://static.vecteezy.com/system/resources/previews/019/861/738/original/music-note-in-doodle-style-illustration-sound-icon-for-print-and-design-melody-symbol-for-study-and-quiz-game-isolated-element-on-black-background-music-note-sign-hand-drawn-vector.jpg"
 
 /// Truncates strings so that they fit in the display
 export const truncateString = (string, num) => {
