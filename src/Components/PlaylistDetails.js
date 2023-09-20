@@ -43,6 +43,7 @@ const PlaylistDetails = () => {
     /// Call the method to set the song objects in the tracklist then update the state variables
     /// that hold the playlist and indicate if the playlist has been found
     const handleSetPlaylist = (retrievedPlaylist) => {
+        // Made extractSongInfo() available at this level because the SoundCloud API can't be used in the same way as the others
         retrievedPlaylist = webService.extractSongInfo(sourcePlatform, retrievedPlaylist); // Get the important details of each song and put in general template
 
 
@@ -109,13 +110,7 @@ const PlaylistDetails = () => {
                 webService.fetchPlaylist(sourcePlatform, token, playlistID)
                 .then((playlistResponse) => {
                     console.log(playlistResponse);
-                    handleSetPlaylist({ 
-                        playlistName: playlistResponse.name,
-                        username: playlistResponse.owner.display_name,
-                        id: playlistID,
-                        tracks: [...playlistResponse.tracks.items],
-                        image: playlistResponse.images[0].url
-                     });
+                    handleSetPlaylist(playlistResponse);
                 });
             });        
     };

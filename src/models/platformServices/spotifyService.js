@@ -202,7 +202,7 @@ export const getUserAccount = async(token) => {
 /// DETAILS: This Spotify API endpoint has a 100-track limit, so this API call will not be sufficient for playlists that have 100+ tracks
 /// Spotify API: https://developer.spotify.com/documentation/web-api/reference/get-playlist
 const fetchPlaylist = async (token, playlistID) => {
-  let playlist = fetch(`https://api.spotify.com/v1/playlists/${playlistID}`, 
+  let playlist = await fetch(`https://api.spotify.com/v1/playlists/${playlistID}`, 
   {
       method: "GET",
       headers: {
@@ -248,24 +248,33 @@ const fetchExtraTracks = async (token, playlistID, offset, limit=50) => {
 /// SUMMARY: Fetch the requested playlist with the app's Spotify token and the playlist's ID
 /// DETAILS: Calls the fetchPlaylist() method. If that Spotify API call was unable to fetch all the tracks, then it will call the fetchExtraTracks() method as many times as necessary
 export const fetchPlaylistAndTracks = async (token, playlistID) => {
-  let playlist = fetchPlaylist(token, playlistID)
-  .then(playlistResponse => {
-    let numTracksFetched = playlistResponse.tracks.items.length;
-    let totalNumTracks = playlistResponse.tracks.total;
-    let extraTracksLimit = 50;    // There is a limit on the number of items that is retrieved from a playlist. The maximum for the Spotify API call in fetchExtraTracks() is 50
 
-    while(numTracksFetched < totalNumTracks) {                // While not all the tracks have been fetched, keep calling fetchExtraTracks()
-      fetchExtraTracks(token, playlistID, numTracksFetched, extraTracksLimit)
-        .then(extraTracksResponse => {
-          playlistResponse.tracks.items = [...playlistResponse.tracks.items, ...extraTracksResponse.items];
-        });
-      numTracksFetched += extraTracksLimit;
-    }
-    return playlistResponse;
-  });
+  let playlist, numTracksFetched, totalNumTracks;
+  let extraTracks = [];
+  let extraTracksLimit = 50;    // There is a limit on the number of items that is retrieved from a playlist. The maximum for the Spotify API call in fetchExtraTracks() is 50
 
-  return playlist;
+  // Get the playlist 
+  playlist = await fetchPlaylist(token, playlistID);
+  numTracksFetched = playlist.tracks.items.length;
+  totalNumTracks = playlist.tracks.total;
 
+  // If the playlist has more tracks than the Playlist API call's limit, get the rest of them
+  let nextBatch;    // The variable that will hold the next set of tracks that are fetched
+  while(numTracksFetched < totalNumTracks) {                // While not all the tracks have been fetched, keep calling fetchExtraTracks()
+    nextBatch = await fetchExtraTracks(token, playlistID, numTracksFetched, extraTracksLimit);
+    numTracksFetched += extraTracksLimit;
+    extraTracks.push(...nextBatch.items);
+  }
+
+  let fullPlaylist = { 
+    playlistName: playlist.name,
+    username: playlist.owner.display_name,
+    id: playlistID,
+    tracks: [...playlist.tracks.items, ...extraTracks],
+    image: playlist.images[0].url
+  };
+
+  return fullPlaylist;
 };
 
 // Helper function to get the names of the artists on a song and put them in a comma-separated string
