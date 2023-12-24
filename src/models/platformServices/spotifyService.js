@@ -351,9 +351,10 @@ const createPlaylist = (token, userID, playlistName) => {
 /// Spotify API: https://developer.spotify.com/documentation/web-api/reference/search
 const searchTrack = async(token, song) => {
 
-  let queryToEncode = `remaster%20track:${song.name}%20artist:${song.artists}`;
+  // let queryToEncode = `remaster%20track:"${sharedService.extractSongName(song.name)}"%20artist:"${song.artists}"%20album:"${song.album}"`;
+  let queryToEncode = `${sharedService.extractSongName(song.name)} - ${song.artists}`;
   let encodedQuery = encodeURIComponent(queryToEncode);
-  let results = fetch(`https://api.spotify.com/v1/search?q=${encodedQuery}&type=track`, {
+  let results = fetch(`https://api.spotify.com/v1/search?q=${encodedQuery}&type=track&limit=50`, {
     method: "GET",
     headers: {
       Authorization: "Bearer " + token.access_token
@@ -375,9 +376,19 @@ const searchTrack = async(token, song) => {
 const findTrack = (results, song) => {
   let trackURI = "";       // The track that will be put into the playlist
   let searchResults = [...results.items];
-
+let firstResults = searchResults.map((song) => {
+  return {
+    name: song.name,
+    album: song.album.name,
+    artists: song.artists.map((artistObject) => artistObject.name),
+    isExplicit: song.explicit
+  }
+});
+console.log("Song searched: " + song.name);
+console.log(firstResults);
   for(let i=0; i<searchResults.length; i++) {   // Use a for loop instead of a forEach so that we can 'break' out once we've found the right track
-    if((searchResults[i].name === song.name || searchResults[i].album.name === song.album)
+    // ORRRR I can check the song.isrc
+    if(searchResults[i].name === song.name && searchResults[i].album.name === song.album  
         && searchResults[i].explicit === song.isExplicit) {   // Check for the right version (i.e., the search result is from the same album and has the same Explicit rating)
       trackURI = searchResults[i].uri;
       break;
@@ -435,7 +446,7 @@ export const transferPlaylist = async (token, userID, playlist) => {
         }
       }));
   });
-
+console.log(missingTracks);
   // Step 2: Create the playlist in the Spotify account and retrieve its Spotify ID
   await createPlaylist(token, userID, newPlaylistName)
     .then(newPlaylistResponse => {

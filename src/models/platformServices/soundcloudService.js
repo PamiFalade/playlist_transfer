@@ -1,5 +1,6 @@
 import * as sharedService from "../sharedService";
 
+
 const regexPattern = ".*(?=\\?si)";
 
 
@@ -34,12 +35,65 @@ export const extractSongInfo = (playlist) => {
             length_ms: song.duration,
             length: sharedService.millisToHoursMinutesAndSeconds(song.duration),
             isExplicit: song.publisher_metadata.explicit,
-            release_date: song.created_at,
-            type: song.kind
+            release_date: song.display_date.slice(0,10),
+            type: song.kind,
+            isrc: findISRC(song)
         });
     });
 
     playlist.tracks = [...formattedSongArray];
     playlist.length = sharedService.millisToHoursMinutesAndSeconds(totalDuration);
     return playlist;
+};
+
+/// SUMMARY: Find a song's ISRC by querying the MusicBrainz API.
+/// DETAILS: An ISRC is a song's unique code. This can be used to easily search the song up on destination platforms.
+const findISRC = async (song) => {
+    let songISRC = "";  // The ISRC of the song
+
+    let songName = sharedService.extractSongName(song.title);
+    let artist = song.publisher_metadata.artist;
+    let queryString = `?query=recording:${encodeURIComponent(songName)}%20and%20artist:${encodeURIComponent(artist)}&fmt=json&inc=isrcs`;
+    let isrcResponse = await fetch(`https://musicbrainz.org/ws/2/recording/${queryString}`, {
+        method: 'GET',
+    }).then(response => {
+        if(response.ok) {
+            console.log("Successfully queried MusicBrainz API! " + queryString);
+        }
+        else { 
+            console.log("Error with querying MusicBrainz API...")
+        }
+        return response.json();
+    });
+    console.log(song);
+    console.log(isrcResponse);
+
+    for(let i=0; i<isrcResponse.recordings.length; i++){
+
+        // Put all the artists' names in one string so that it's easy to compare
+        let recordingArtists = "";
+        isrcResponse.recordings[i]["artist-credit"].forEach(artist => {   // Since the artist-credit field in the recording object has a "-" in the name, we have to access it with the [] and the string version of its name
+            if(recordingArtists === "") {               // In JavaScript, any field you can access using the . operator, you can access using [] with a string version of the field name.
+                recordingArtists += artist.name;
+            }
+            else {
+                recordingArtists += `, ${artist.name}`;
+            }
+        });
+
+        // Find the right ISRC
+        if(song.artists === recordingArtists && song.release_date === isrcResponse.recordings[i]["first-release-date"]) {
+            if(isrcResponse.recordings.isrcs) {
+                songISRC = isrcResponse.recordings.isrcs[0];
+                break;
+            }
+            else {
+                songISRC = "";
+                break;
+            }
+        }
+    };
+
+    console.log(songISRC);
+    return songISRC;
 };
