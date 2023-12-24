@@ -1,5 +1,11 @@
 # Getting Started with Create React App
 
+##Things I've Learned
+* Different types of loops have different levels of performance
+** forEach loops are 6 times slower than do-while loops, and 4 times slower than for loops and while loops
+* Working with API's, asynchronous functions
+** Using the await keyword does not work in a forEach loop. It needs to be at the "top level." You can use it in a for loop though.
+** If you are getting a value that is returned from an asynchronous function, it will be received as a Promise. To unravel the Promise so you get the actual data you need, you need to put the 'await' keyword before the function call. 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
