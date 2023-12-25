@@ -100,14 +100,14 @@ export const fetchPlaylist = (source, token, playlistID) => {
 
 /// Calls the appropriate platform's extractSongInfo() method, which gets the song's title, image, 
 /// artist(s), and length, and checks if it is explicit
-export const extractSongInfo = (source, playlist) => {
+export const extractSongInfo = async (source, playlist) => {
   let formattedPlaylist;
   switch(source) {
     case "spotify":
       formattedPlaylist = spotify.extractSongInfo(playlist);
       break;
     case "soundcloud":
-      formattedPlaylist = soundcloud.extractSongInfo(playlist);
+      formattedPlaylist = await soundcloud.extractSongInfo(playlist);
       break;
     default:
       return;

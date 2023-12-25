@@ -42,9 +42,9 @@ const PlaylistDetails = () => {
 
     /// Call the method to set the song objects in the tracklist then update the state variables
     /// that hold the playlist and indicate if the playlist has been found
-    const handleSetPlaylist = (retrievedPlaylist) => {
+    const handleSetPlaylist = async (retrievedPlaylist) => {
         // Made extractSongInfo() available at this level because the SoundCloud API can't be used in the same way as the others
-        retrievedPlaylist = webService.extractSongInfo(sourcePlatform, retrievedPlaylist); // Get the important details of each song and put in general template
+        retrievedPlaylist = await webService.extractSongInfo(sourcePlatform, retrievedPlaylist); // Get the important details of each song and put in general template
 
 
         setPlaylist(retrievedPlaylist);

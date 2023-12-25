@@ -24,40 +24,25 @@ export const extractSongTitle = (title) => {
 export const extractSongInfo = async (playlist) => {
     let formattedSongArray = [];
     let totalDuration = 0;  // The total run time of the playlist 
-
-    // for(let i=0; i<playlist?.tracks.length; i++){
-    //     let songISRC = await findISRC(playlist.tracks[i]);  // Fetch the ISRC of the song
-    //     totalDuration += playlist.tracks[i].duration;
-
-    //     formattedSongArray.push({
-    //         name: extractSongTitle(playlist.tracks[i].title),
-    //         album: playlist.tracks[i].publisher_metadata.album_title,
-    //         image: playlist.tracks[i].artwork_url,
-    //         artists: playlist.tracks[i].publisher_metadata.artist,
-    //         length_ms: playlist.tracks[i].duration,
-    //         length: sharedService.millisToHoursMinutesAndSeconds(playlist.tracks[i].duration),
-    //         isExplicit: playlist.tracks[i].publisher_metadata.explicit,
-    //         release_date: playlist.tracks[i].display_date.slice(0,10),
-    //         type: playlist.tracks[i].kind,
-    //         isrc: songISRC
-    //     });
-    // }
+    let songToAdd = {};     // The song object that will be added to the formattedSongArray
     
-    playlist.tracks.forEach(song => {
-        totalDuration += song.duration;
-        formattedSongArray.push({
-            name: extractSongTitle(song.title),
-            album: song.publisher_metadata.album_title,
-            image: song.artwork_url,
-            artists: song.publisher_metadata.artist,
-            length_ms: song.duration,
-            length: sharedService.millisToHoursMinutesAndSeconds(song.duration),
-            isExplicit: song.publisher_metadata.explicit,
-            release_date: song.display_date.slice(0,10),
-            type: song.kind,
-            isrc: findISRC(song)
-        });
-    });
+    for(let i=0; i<playlist.tracks.length; i++){
+        totalDuration += playlist.tracks[i].duration;
+        songToAdd = {
+            name: extractSongTitle(playlist.tracks[i].title),
+            album: playlist.tracks[i].publisher_metadata.album_title,
+            image: playlist.tracks[i].artwork_url,
+            artists: playlist.tracks[i].publisher_metadata.artist,
+            length_ms: playlist.tracks[i].duration,
+            length: sharedService.millisToHoursMinutesAndSeconds(playlist.tracks[i].duration),
+            isExplicit: playlist.tracks[i].publisher_metadata.explicit,
+            release_date: playlist.tracks[i].display_date.slice(0,10),
+            type: playlist.tracks[i].kind,
+        };
+        songToAdd.isrc = await findISRC(playlist.tracks[i]);
+
+        formattedSongArray.push(songToAdd);
+    }
 
     playlist.tracks = [...formattedSongArray];
     playlist.length = sharedService.millisToHoursMinutesAndSeconds(totalDuration);
@@ -94,13 +79,7 @@ const compareArtistToSongTitleMusicBrainz = (song, musicBrainzArtists) => {
 const compareArtistListsMusicBrainz = (songArtists, musicBrainzArtists) => {
     let match = true;
     for(let i=0; i<musicBrainzArtists.length; i++){
-        let mbArtistName = "";
-        if(musicBrainzArtists[i].joinphrase) {
-            mbArtistName = musicBrainzArtists[i].joinphrase.concat(musicBrainzArtists[i].name);
-        }
-        else {
-            mbArtistName = musicBrainzArtists[i].name;
-        }
+        let mbArtistName = musicBrainzArtists[i].name;
         if(songArtists.includes(mbArtistName) == false){
             match = false;
         }
@@ -111,7 +90,6 @@ const compareArtistListsMusicBrainz = (songArtists, musicBrainzArtists) => {
 /// SUMMARY: Find a song's ISRC by querying the MusicBrainz API.
 /// DETAILS: An ISRC is a song's unique code. This can be used to easily search the song up on destination platforms.
 const findISRC = async (song) => {
-    let songISRC = "Uhoh";  // The ISRC of the song
 
     let songName = sharedService.extractSongName(song.title);
     let artist = song.publisher_metadata.artist;
@@ -129,19 +107,27 @@ const findISRC = async (song) => {
         }
         return response.json();
     }).then(isrcRes => {
-        let isrc = "WORKING?";
+        let isrc = "";
         // Iterate through the search results from the MusicBrainz API to find the right recording
         for(let i=0; i<isrcRes.recordings.length; i++){
             let artistsCheck = compareArtistListsMusicBrainz(song.publisher_metadata.artist, isrcRes.recordings[i]["artist-credit"]);
-            if(artistsCheck || song.title.includes(isrcRes.recordings[i].title) ){
-                isrc = isrcRes.recordings[i].isrcs[0];
-                break;
+            if(songName.includes("Danger")){
+                console.log(isrcRes);
+            }
+            try{
+                if(artistsCheck || song.title.includes(isrcRes.recordings[i].title) ){
+                    isrc = isrcRes.recordings[i].isrcs[isrcRes.recordings[i].isrcs.length - 1];     // It appears that if there are multiple ISRC's that are stored, the last one is the correct one
+                    break;
+                }
+            }
+            catch(error){
+                continue;
             }
         }
         
         return isrc;
     });
 
-    console.log(song.title + ": " + isrcResponse);
+    console.log(isrcResponse);
     return isrcResponse;
 };
