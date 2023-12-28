@@ -19,6 +19,10 @@ export const extractSongTitle = (title) => {
     }
 } 
 
+/// SUMMARY: Helper function to make sure that the song object has no undefined values
+/// DETAILS: Takes the song object and a value that is specified when the function is called as arguments. Sets any keys that are "undefined" to that value.
+let setUndefinedKeys = (song, val) => Object.keys(song).forEach(k => song[k] === undefined ? song[k] = val : song[k]);
+
 /// Extracts the song's title, image, artist(s), and length, and checks if it is explicit from
 /// the tracklist that comes in the SoundCloud playlist object
 export const extractSongInfo = async (playlist) => {
@@ -39,7 +43,11 @@ export const extractSongInfo = async (playlist) => {
             release_date: playlist.tracks[i].display_date.slice(0,10),
             type: playlist.tracks[i].kind,
         };
-        songToAdd.isrc = await findISRC(playlist.tracks[i]);
+
+        // Set any values that are "undefined" to an empty string
+        setUndefinedKeys(songToAdd, "");
+        
+        songToAdd.isrc = await findISRC(songToAdd);
 
         formattedSongArray.push(songToAdd);
     }
@@ -91,8 +99,8 @@ const compareArtistListsMusicBrainz = (songArtists, musicBrainzArtists) => {
 /// DETAILS: An ISRC is a song's unique code. This can be used to easily search the song up on destination platforms.
 const findISRC = async (song) => {
 
-    let songName = sharedService.extractSongName(song.title);
-    let artist = song.publisher_metadata.artist;
+    let songName = sharedService.extractSongName(song.name);
+    let artist = song.artists;
     let queryString = `?query=recording:${encodeURIComponent(songName)}%20artist:${encodeURIComponent(artist)}&fmt=json&inc=isrcs`;
     
     // The ISRC of the song
@@ -107,27 +115,27 @@ const findISRC = async (song) => {
         }
         return response.json();
     }).then(isrcRes => {
+        if(song.name === "Smells Like Teen Spirit"){
+            console.log(isrcRes);
+        }
         let isrc = "";
-        // Iterate through the search results from the MusicBrainz API to find the right recording
-        for(let i=0; i<isrcRes.recordings.length; i++){
-            let artistsCheck = compareArtistListsMusicBrainz(song.publisher_metadata.artist, isrcRes.recordings[i]["artist-credit"]);
-            if(songName.includes("Danger")){
-                console.log(isrcRes);
-            }
-            try{
-                if(artistsCheck || song.title.includes(isrcRes.recordings[i].title) ){
-                    isrc = isrcRes.recordings[i].isrcs[isrcRes.recordings[i].isrcs.length - 1];     // It appears that if there are multiple ISRC's that are stored, the last one is the correct one
+        try {
+            for(let i=0; i<isrcRes.recordings.length; i++){
+                if(isrcRes.recordings[i].isrcs === undefined) {
+                    continue;
+                }
+                else {
+                    isrc = isrcRes.recordings[i].isrcs.slice(-1)[0];
                     break;
                 }
             }
-            catch(error){
-                continue;
-            }
         }
-        
+        catch(error) {
+            console.error(song.name + ": " + error);
+        }
+
         return isrc;
     });
 
-    console.log(isrcResponse);
     return isrcResponse;
 };

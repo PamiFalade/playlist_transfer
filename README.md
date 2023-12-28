@@ -6,7 +6,12 @@
 * Working with API's, asynchronous functions
 ** Using the await keyword does not work in a forEach loop. It needs to be at the "top level." You can use it in a for loop though.
 ** If you are getting a value that is returned from an asynchronous function, it will be received as a Promise. To unravel the Promise so you get the actual data you need, you need to put the 'await' keyword before the function call. 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+* Arrow functions vs normal functions (https://www.youtube.com/watch?v=5iGGvJn8K1U&ab_channel=WebDevSimplified)
+* Hoisting functions (https://stackoverflow.com/questions/33040703/proper-use-of-const-for-defining-functions)
+** This is why it may be preferable to use normal functions instead of arrow functions. Arrow functions act like normal variables, so they don't exhibit any hoisting behaviour, so they must be defined before the actual code that uses them.
+* let vs. const for member variable declarations
+** Using const makes it so that the function does not modify the object 
+* Can't use the "continue" to skip iterations in a forEach loop, like you can in a for, while, and do-while loop. Instead, use "return"
 
 ## Available Scripts
 

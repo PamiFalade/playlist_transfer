@@ -459,14 +459,14 @@ export const transferPlaylist = async (token, userID, playlist) => {
 
   // Step 1: Find and retrieve the Spotify URI's for all the tracks that will be put into the transferred playlist
   await playlist.tracks.forEach(song => {
+    if(song.isrc === "") {
+      missingTracks.push(song);
+      return;
+    }
     try{
       searchTrackByISRC(token, song.isrc)
       .then((searchResults => {
-        if(song.isrc === 'USUM72308619'){
-          console.log(searchResults);
-        }
         let trackURI = searchResults.tracks.items[0].uri;
-        console.log(trackURI);
         tracksURIArray.push(trackURI);
       }));
     }
