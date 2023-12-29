@@ -101,6 +101,7 @@ const findISRC = async (song) => {
 
     let songName = sharedService.extractSongName(song.name);
     let artist = song.artists;
+    /// IDEA: I probably need to input more details than just the song and artist name in order to get more accurate search fesults
     let queryString = `?query=recording:${encodeURIComponent(songName)}%20artist:${encodeURIComponent(artist)}&fmt=json&inc=isrcs`;
     
     // The ISRC of the song
@@ -115,9 +116,7 @@ const findISRC = async (song) => {
         }
         return response.json();
     }).then(isrcRes => {
-        if(song.name === "Smells Like Teen Spirit"){
-            console.log(isrcRes);
-        }
+        
         let isrc = "";
         try {
             for(let i=0; i<isrcRes.recordings.length; i++){

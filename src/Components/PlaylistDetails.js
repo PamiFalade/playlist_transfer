@@ -4,6 +4,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import loadscript from "load-script";
 import * as webService from "../models/webService";
 import * as sharedService from "../models/sharedService";
+import MissingSongsDisplay from "./MissingSongsDisplay";
+import TracklistDisplay from "./TracklistDisplay";
 
 
 
@@ -144,7 +146,9 @@ const PlaylistDetails = () => {
                 <div id="playlistInfo">
                     <p>{playlist.tracks.length} songs | {playlist.length}</p>
                 </div>
-                <div className="tracklistDisplay">
+                {/* <div style={{backgroundColor:"red", width:"50vw", height:"50vh"}} /> */}
+                <TracklistDisplay playlist={playlist.tracks}/>
+                {/* <div className="tracklistDisplay">
                     {playlist.tracks.map((song, index) => {
                         return <div className="songDisplay" key={index}>
                         <img src={song.image !== "" ? song.image : sharedService.missingTrackImg}/>
@@ -154,7 +158,7 @@ const PlaylistDetails = () => {
                         </div>
                         </div>
                     })}
-                </div>
+                </div> */}
 
                 <div className="confirmButtons">
                 <button>
