@@ -6,7 +6,7 @@ import * as webService from "../models/webService";
 import * as sharedService from "../models/sharedService";
 import MissingSongsDisplay from "./TransferSummary";
 import TracklistDisplay from "./TracklistDisplay";
-import { Button } from "bootstrap";
+import ScaleLoader from "react-spinners/ScaleLoader";
 
 
 
@@ -19,6 +19,10 @@ const PlaylistDetails = () => {
     
     // Move on to the Destination Select page once the playlist has been confirmed
     const navigate = useNavigate();
+
+    // Used to display loading symbol while playlist isn't loaded yet.
+    // Loading symbol is displayed while it's "loading", and playlist will be displayed while it is "not loading"
+    const [loading, setLoading] = useState(true);
 
     // Save playlist data to sessionStorage to make it persistent, so that it can be accessed in the DestinationSelect page.
     // Then navigate to DestinationSelect page
@@ -55,6 +59,7 @@ const PlaylistDetails = () => {
         retrievedPlaylist = await webService.extractSongInfo(sourcePlatform, retrievedPlaylist); // Get the important details of each song and put in general template
 
 
+        setLoading(false);
         setPlaylist(retrievedPlaylist);
         setFoundPlaylist(true);
      };
@@ -137,6 +142,19 @@ const PlaylistDetails = () => {
 
     return(
         <div id="playlistSummary">
+            
+            {/* Loading symbol */}
+            { loading && 
+                <div className="loadingSymbol">
+                    <h2>Loading...</h2>
+                    <ScaleLoader 
+                        color="antiquewhite"
+                        loading={loading}
+                        size={150}
+                        aria-label="Loading Spinner"
+                        data-testid="loader"/>
+                </div>
+            }
 
             {/* SoundCloud Widget API */}
             { foundPlaylist === false && sourcePlatform === "soundcloud" &&
