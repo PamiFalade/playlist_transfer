@@ -8,14 +8,15 @@ const TracklistDisplay = (playlist) => {
     return(
         <div className="tracklistDisplay">
             {tracks.map((song, index) => {
-                return <div className="songDisplay" key={index}>
-                <img src={song.image !== "" ? song.image : sharedService.missingTrackImg}/>
-                <div className="songInfo" style={{marginLeft:"5%"}}>
-                    <h5>{sharedService.truncateString(song.name, 26)}</h5>
-                    <p>{sharedService.truncateString(song.artists, 45)}</p>
+                return (
+                <div className="songDisplay" key={index}>
+                    <img className="songImg" src={song.image !== "" ? song.image : sharedService.missingTrackImg}/>
+                    <div className="songInfo">
+                        <h5>{sharedService.truncateString(song.name, 26)}</h5>
+                        <p>{sharedService.truncateString(song.artists, 45)}</p>
+                    </div>
                 </div>
-                </div>
-            })}
+            )})}
         </div>
     );
 

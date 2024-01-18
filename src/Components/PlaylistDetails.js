@@ -4,8 +4,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import loadscript from "load-script";
 import * as webService from "../models/webService";
 import * as sharedService from "../models/sharedService";
-import MissingSongsDisplay from "./MissingSongsDisplay";
+import MissingSongsDisplay from "./TransferSummary";
 import TracklistDisplay from "./TracklistDisplay";
+import { Button } from "bootstrap";
 
 
 
@@ -27,6 +28,11 @@ const PlaylistDetails = () => {
 
         // Go to DestinationSelect page
         navigate("/destination-select");
+    };
+
+    // Go back to the home page, so that the user can access the link entry again
+    const navigateBack = () => {
+        navigate("/");
     };
 
     /// The playlist that will be transferred
@@ -130,7 +136,7 @@ const PlaylistDetails = () => {
       
 
     return(
-        <div>
+        <div id="playlistSummary">
 
             {/* SoundCloud Widget API */}
             { foundPlaylist === false && sourcePlatform === "soundcloud" &&
@@ -146,29 +152,14 @@ const PlaylistDetails = () => {
                 <div id="playlistInfo">
                     <p>{playlist.tracks.length} songs | {playlist.length}</p>
                 </div>
-                {/* <div style={{backgroundColor:"red", width:"50vw", height:"50vh"}} /> */}
                 <TracklistDisplay playlist={playlist.tracks}/>
-                {/* <div className="tracklistDisplay">
-                    {playlist.tracks.map((song, index) => {
-                        return <div className="songDisplay" key={index}>
-                        <img src={song.image !== "" ? song.image : sharedService.missingTrackImg}/>
-                        <div className="songInfo" style={{marginLeft:"5%"}}>
-                            <h5>{sharedService.truncateString(song.name, 26)}</h5>
-                            <p>{sharedService.truncateString(song.artists, 45)}</p>
-                        </div>
-                        </div>
-                    })}
-                </div> */}
-
-                <div className="confirmButtons">
-                <button>
-                    Go Back
+                <button className="btn btn-secondary" type="button" onClick={navigateBack}>
+                    Back
                 </button>
 
-                <button onClick={openDestinationSelect}>
+                <button className="btn btn-primary confirmButton" type="button" onClick={openDestinationSelect}>
                     This is it!
                 </button>
-            </div>
             </div> }
 
         </div>

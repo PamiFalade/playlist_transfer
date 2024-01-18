@@ -311,7 +311,8 @@ let count = 1;
             length: sharedService.millisToHoursMinutesAndSeconds(song.track.duration_ms),
             isExplicit: song.track.explicit,
             release_date: song.track.album.release_date,
-            type: song.type
+            type: song.type,
+            isrc: song.track.external_ids.isrc
         });
     });
 
@@ -408,8 +409,7 @@ let firstResults = searchResults.map((song) => {
     isExplicit: song.explicit
   }
 });
-console.log("Song searched: " + song.name);
-console.log(firstResults);
+
   for(let i=0; i<searchResults.length; i++) {   // Use a for loop instead of a forEach so that we can 'break' out once we've found the right track
     // ORRRR I can check the song.isrc
     if(searchResults[i].name === song.name && searchResults[i].album.name === song.album  
@@ -475,7 +475,7 @@ export const transferPlaylist = async (token, userID, playlist) => {
     }
     
   });
-console.log(missingTracks);
+
   // Step 2: Create the playlist in the Spotify account and retrieve its Spotify ID
   await createPlaylist(token, userID, newPlaylistName)
     .then(newPlaylistResponse => {
@@ -510,4 +510,5 @@ console.log(missingTracks);
       });
   }
   
+  return missingTracks;
 };

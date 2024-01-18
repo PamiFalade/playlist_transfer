@@ -4,7 +4,7 @@ import { Card, Button }from "react-bootstrap";
 import { Form, redirect, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import { Buffer } from "buffer";
-import PlatformSelector from "../Components/PlatformSelector";
+import LinkInput from "../Components/LinkInput";
 import {
   extractSource,
   extractPlaylistInfo
@@ -16,26 +16,19 @@ import {
 const Landing = () => {
 
   return (
-    <main className="landing">
-      <h1>Welcome!</h1>
-      <h2>Find your playlist...</h2>
-      <Card className="card">
-        <Card.Title className="cardTitle">With Share Link...</Card.Title>
-        <Card.Body>
-          <Form method="post" className="form" action="">
-            <input type="url" className="entry" name="playlistLink"/>
-            <button className="submitButton">Submit</button>
-          </Form>
-        </Card.Body>
-      </Card>
-
-      <PlatformSelector />
-    </main>
+    <div className="mainSection mainSectionBlue">
+      <h1>Find your playlist...</h1>
+      
+      {/* IDEA: Change the theme of the app based on the share link (i.e., once the link is entered into the input field, check its source. Then change the theme of the app accordingly) */}
+      <LinkInput />
+      
+    </div>
   );
 };
 
 export default Landing;
 
+// Works if it's in LinkInput, but throws an error if the function is not present in this file
 export const playlistLinkAction = async ({ request }) => {
   const data = await request.formData();
   const submission = { playlistLink: data.get('playlistLink') };

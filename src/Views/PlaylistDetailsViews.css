@@ -4,50 +4,23 @@ h2 {
 
 #playlistSummary {
     position: relative;
-    left: 25vw;
-    top: 0vh;
     width: 50vw;
-    height: 85vh;
-    background-color: blueviolet;
+    height: 90vh;
+    left: 25vw;
+    background-color: #823333;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    border-radius: 2%;
 }
 
 #playlistImage {
-    width: 15vw;
-    left: 80vw;
+    width: 35%;
+    margin: 0% 32.5% 0%;
 }
 
 #playlistInfo {
     text-align: center;
-}
-
-.tracklistDisplay {
-    height: 35vh;
-    width: 110%;
-    display: flex;
-    flex-direction: column;
-    background-color: green;
-    border: solid 1px black;
-    overflow-y: scroll;
-}
-
-.songDisplay {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    border: 1px solid black;
-    height: 22%;
-    width: 100%;
-    padding-bottom: 1vh;
-}
-
-.confirmButtons {
-    margin-top: 3vh;
-    width: 40%;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    margin-bottom: 0;
 }

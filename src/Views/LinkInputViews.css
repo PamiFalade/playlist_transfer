@@ -1,0 +1,29 @@
+.card {
+    position: relative;
+    width: 30vw;
+    height: 30vh;
+    margin-left: 35vw;
+    margin-bottom: 2vw;
+  }
+  
+  .form {
+    position: relative;
+    height: 13vh;
+    width: 25vw;
+  }
+  
+  .form > * {
+    position: absolute;
+  }
+  
+  .entry {
+    left: 0;
+    top: 20%;
+    width: 100%;
+  }
+  
+  .submitButton {
+    bottom: 0;
+    right: 0;
+  }
+  

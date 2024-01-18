@@ -12,6 +12,9 @@
 * let vs. const for member variable declarations
 ** Using const makes it so that the function does not modify the object 
 * Can't use the "continue" to skip iterations in a forEach loop, like you can in a for, while, and do-while loop. Instead, use "return"
+* Animating CSS Grid (https://css-tricks.com/animating-css-grid-how-to-examples/)
+** Seems to only work for columns, not rows.
+** Transitions won't work if you declare the columns using repeat(). Need to manually define each column.  
 
 ## Available Scripts
 

@@ -161,6 +161,10 @@ export const extractSongTitle = (source, title) => {
 };
 
 
-export const transferPlaylist = (token, userID, playlist) => {
-  spotify.transferPlaylist(token, userID, playlist);
+export const transferPlaylist = async (token, userID, playlist) => {
+  let missingTracks;  // The list of songs that were not transferred due to an error
+
+  missingTracks = await spotify.transferPlaylist(token, userID, playlist);
+
+  return missingTracks;
 };
