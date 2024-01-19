@@ -19,81 +19,122 @@ export const extractSongTitle = (title) => {
     }
 } 
 
+/// SUMMARY: Helper function to make sure that the song object has no undefined values
+/// DETAILS: Takes the song object and a value that is specified when the function is called as arguments. Sets any keys that are "undefined" to that value.
+let setUndefinedKeys = (song, val) => Object.keys(song).forEach(k => song[k] === undefined ? song[k] = val : song[k]);
+
 /// Extracts the song's title, image, artist(s), and length, and checks if it is explicit from
 /// the tracklist that comes in the SoundCloud playlist object
-export const extractSongInfo = (playlist) => {
+export const extractSongInfo = async (playlist) => {
     let formattedSongArray = [];
     let totalDuration = 0;  // The total run time of the playlist 
+    let songToAdd = {};     // The song object that will be added to the formattedSongArray
+    
+    for(let i=0; i<playlist.tracks.length; i++){
+        totalDuration += playlist.tracks[i].duration;
+        songToAdd = {
+            name: extractSongTitle(playlist.tracks[i].title),
+            album: playlist.tracks[i].publisher_metadata.album_title,
+            image: playlist.tracks[i].artwork_url,
+            artists: playlist.tracks[i].publisher_metadata.artist,
+            length_ms: playlist.tracks[i].duration,
+            length: sharedService.millisToHoursMinutesAndSeconds(playlist.tracks[i].duration),
+            isExplicit: playlist.tracks[i].publisher_metadata.explicit,
+            release_date: playlist.tracks[i].display_date.slice(0,10),
+            type: playlist.tracks[i].kind,
+        };
 
-    playlist.tracks.forEach(song => {
-        totalDuration += song.duration;
-        formattedSongArray.push({
-            name: extractSongTitle(song.title),
-            album: song.publisher_metadata.album_title,
-            image: song.artwork_url,
-            artists: song.publisher_metadata.artist,
-            length_ms: song.duration,
-            length: sharedService.millisToHoursMinutesAndSeconds(song.duration),
-            isExplicit: song.publisher_metadata.explicit,
-            release_date: song.display_date.slice(0,10),
-            type: song.kind,
-            isrc: findISRC(song)
-        });
-    });
+        // Set any values that are "undefined" to an empty string
+        setUndefinedKeys(songToAdd, "");
+        
+        songToAdd.isrc = await findISRC(songToAdd);
+
+        formattedSongArray.push(songToAdd);
+    }
 
     playlist.tracks = [...formattedSongArray];
     playlist.length = sharedService.millisToHoursMinutesAndSeconds(totalDuration);
+    console.log(playlist);
     return playlist;
 };
+
+/// SUMMARY: Helper function to check that the list of credited artists on MusicBrainz are in the title of the track from SoundCloud
+/// DETAILS: MusicBrainz stores an array of objects, each of which contain the artist's name and the join phrase (feat., or &).
+///          Sometimes, SoundCloud does not have the names of all the artists that were involved in its publisher_metadata field.
+///          In these instances, this function is used to check if the list of artist objects are in the SoundCloud track title.
+const compareArtistToSongTitleMusicBrainz = (song, musicBrainzArtists) => {
+    let mbArtistList = ""; // Artist list from MusicBrainz
+    let soundcloudTrackTitle = song.publisher_metadata.title;   // The track's title on SoundCloud
+    let soundcloudArtist = song.publisher_metadata.artist;      // The track's artist on SoundCloud
+    let titleArtistList = soundcloudTrackTitle.slice(soundcloudTrackTitle.indexOf("-"));    // Extract the 
+    let match = true;
+    for(let i=0; i<musicBrainzArtists.length; i++){
+        let artist = musicBrainzArtists[i].joinphrase.concat(musicBrainzArtists[i].name);
+        mbArtistList += artist;
+        if(soundcloudTrackTitle.includes(artist)){
+            match = false;
+        }
+    }
+    
+    // Artist list from MusicBrainz can have artists in the wrong order, so compare their lengths
+    if(mbArtistList.trim().length === titleArtistList.trim().length)
+    return match;
+}
+
+/// SUMMARY: Helper function to check that the list of credited artists match on both platforms.
+/// DETAILS: MusicBrainz stores an array of objects, each of which contain the artist's name and the join phrase (feat., or &).
+///          Check if the list of artist objects match with the artist that is credited from SoundCloud's API.
+const compareArtistListsMusicBrainz = (songArtists, musicBrainzArtists) => {
+    let match = true;
+    for(let i=0; i<musicBrainzArtists.length; i++){
+        let mbArtistName = musicBrainzArtists[i].name;
+        if(songArtists.includes(mbArtistName) == false){
+            match = false;
+        }
+    }
+    return match;
+}
 
 /// SUMMARY: Find a song's ISRC by querying the MusicBrainz API.
 /// DETAILS: An ISRC is a song's unique code. This can be used to easily search the song up on destination platforms.
 const findISRC = async (song) => {
-    let songISRC = "";  // The ISRC of the song
 
-    let songName = sharedService.extractSongName(song.title);
-    let artist = song.publisher_metadata.artist;
-    let queryString = `?query=recording:${encodeURIComponent(songName)}%20and%20artist:${encodeURIComponent(artist)}&fmt=json&inc=isrcs`;
+    let songName = sharedService.extractSongName(song.name);
+    let artist = song.artists;
+    /// IDEA: I probably need to input more details than just the song and artist name in order to get more accurate search fesults
+    let queryString = `?query=recording:${encodeURIComponent(songName)}%20artist:${encodeURIComponent(artist)}&fmt=json&inc=isrcs`;
+    
+    // The ISRC of the song
     let isrcResponse = await fetch(`https://musicbrainz.org/ws/2/recording/${queryString}`, {
         method: 'GET',
     }).then(response => {
         if(response.ok) {
-            console.log("Successfully queried MusicBrainz API! " + queryString);
+            console.log("Successfully queried MusicBrainz API! ");
         }
         else { 
-            console.log("Error with querying MusicBrainz API...")
+            console.log("Error with querying MusicBrainz API...");
         }
         return response.json();
-    });
-    console.log(song);
-    console.log(isrcResponse);
-
-    for(let i=0; i<isrcResponse.recordings.length; i++){
-
-        // Put all the artists' names in one string so that it's easy to compare
-        let recordingArtists = "";
-        isrcResponse.recordings[i]["artist-credit"].forEach(artist => {   // Since the artist-credit field in the recording object has a "-" in the name, we have to access it with the [] and the string version of its name
-            if(recordingArtists === "") {               // In JavaScript, any field you can access using the . operator, you can access using [] with a string version of the field name.
-                recordingArtists += artist.name;
-            }
-            else {
-                recordingArtists += `, ${artist.name}`;
-            }
-        });
-
-        // Find the right ISRC
-        if(song.artists === recordingArtists && song.release_date === isrcResponse.recordings[i]["first-release-date"]) {
-            if(isrcResponse.recordings.isrcs) {
-                songISRC = isrcResponse.recordings.isrcs[0];
-                break;
-            }
-            else {
-                songISRC = "";
-                break;
+    }).then(isrcRes => {
+        
+        let isrc = "";
+        try {
+            for(let i=0; i<isrcRes.recordings.length; i++){
+                if(isrcRes.recordings[i].isrcs === undefined) {
+                    continue;
+                }
+                else {
+                    isrc = isrcRes.recordings[i].isrcs.slice(-1)[0];
+                    break;
+                }
             }
         }
-    };
+        catch(error) {
+            console.error(song.name + ": " + error);
+        }
 
-    console.log(songISRC);
-    return songISRC;
+        return isrc;
+    });
+
+    return isrcResponse;
 };

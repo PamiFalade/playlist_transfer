@@ -26,9 +26,7 @@ const PlatformSelector = () => {
     };
 
     return(
-        <Card className="card">
-            <Card.Title>With Login...</Card.Title>
-            <Card.Subtitle>Login to find the playlist</Card.Subtitle>
+        <Card id="platformCard">
             <Card.Body>
             <div id="platformGrid">
                 <div className="logoContainer" id="spotifyButton" onClick={() => {handleLogin("spotifyButton")}}>

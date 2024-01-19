@@ -4,6 +4,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import loadscript from "load-script";
 import * as webService from "../models/webService";
 import * as sharedService from "../models/sharedService";
+import MissingSongsDisplay from "./TransferSummary";
+import TracklistDisplay from "./TracklistDisplay";
+import ScaleLoader from "react-spinners/ScaleLoader";
 
 
 
@@ -17,6 +20,10 @@ const PlaylistDetails = () => {
     // Move on to the Destination Select page once the playlist has been confirmed
     const navigate = useNavigate();
 
+    // Used to display loading symbol while playlist isn't loaded yet.
+    // Loading symbol is displayed while it's "loading", and playlist will be displayed while it is "not loading"
+    const [loading, setLoading] = useState(true);
+
     // Save playlist data to sessionStorage to make it persistent, so that it can be accessed in the DestinationSelect page.
     // Then navigate to DestinationSelect page
     const openDestinationSelect = () => {
@@ -25,6 +32,11 @@ const PlaylistDetails = () => {
 
         // Go to DestinationSelect page
         navigate("/destination-select");
+    };
+
+    // Go back to the home page, so that the user can access the link entry again
+    const navigateBack = () => {
+        navigate("/");
     };
 
     /// The playlist that will be transferred
@@ -42,11 +54,12 @@ const PlaylistDetails = () => {
 
     /// Call the method to set the song objects in the tracklist then update the state variables
     /// that hold the playlist and indicate if the playlist has been found
-    const handleSetPlaylist = (retrievedPlaylist) => {
+    const handleSetPlaylist = async (retrievedPlaylist) => {
         // Made extractSongInfo() available at this level because the SoundCloud API can't be used in the same way as the others
-        retrievedPlaylist = webService.extractSongInfo(sourcePlatform, retrievedPlaylist); // Get the important details of each song and put in general template
+        retrievedPlaylist = await webService.extractSongInfo(sourcePlatform, retrievedPlaylist); // Get the important details of each song and put in general template
 
 
+        setLoading(false);
         setPlaylist(retrievedPlaylist);
         setFoundPlaylist(true);
      };
@@ -128,7 +141,20 @@ const PlaylistDetails = () => {
       
 
     return(
-        <div>
+        <div id="playlistSummary">
+            
+            {/* Loading symbol */}
+            { loading && 
+                <div className="loadingSymbol">
+                    <h2>Loading...</h2>
+                    <ScaleLoader 
+                        color="antiquewhite"
+                        loading={loading}
+                        size={150}
+                        aria-label="Loading Spinner"
+                        data-testid="loader"/>
+                </div>
+            }
 
             {/* SoundCloud Widget API */}
             { foundPlaylist === false && sourcePlatform === "soundcloud" &&
@@ -144,27 +170,14 @@ const PlaylistDetails = () => {
                 <div id="playlistInfo">
                     <p>{playlist.tracks.length} songs | {playlist.length}</p>
                 </div>
-                <div className="tracklistDisplay">
-                    {playlist.tracks.map((song, index) => {
-                        return <div className="songDisplay" key={index}>
-                        <img src={song.image !== "" ? song.image : sharedService.missingTrackImg}/>
-                        <div className="songInfo" style={{marginLeft:"5%"}}>
-                            <h5>{sharedService.truncateString(song.name, 26)}</h5>
-                            <p>{sharedService.truncateString(song.artists, 45)}</p>
-                        </div>
-                        </div>
-                    })}
-                </div>
-
-                <div className="confirmButtons">
-                <button>
-                    Go Back
+                <TracklistDisplay playlist={playlist.tracks}/>
+                <button className="btn btn-secondary" type="button" onClick={navigateBack}>
+                    Back
                 </button>
 
-                <button onClick={openDestinationSelect}>
+                <button className="btn btn-primary confirmButton" type="button" onClick={openDestinationSelect}>
                     This is it!
                 </button>
-            </div>
             </div> }
 
         </div>

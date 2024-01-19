@@ -4,6 +4,7 @@ import "../Views/DestinationSelectViews.css";
 import PlatformSelector from "../Components/PlatformSelector";
 import { Button } from "react-bootstrap";
 import * as webService from "../models/webService.js";
+import TransferSummary from "../Components/TransferSummary.js";
 
 const DestinationSelect = () => {
 
@@ -23,7 +24,13 @@ const DestinationSelect = () => {
     // State variable that holds the access token for the logged in user
     const [token, setToken] = useState("");
 
-    // The playlist that will be transferred
+    // State variable that indicates if the component that shows if the "TransferSummary" component is visible or not
+    const [showSummary, setShowSummary] = useState(false);
+    const handleShowSummary = () => {
+        setShowSummary(!showSummary);
+    };
+
+    // State variable that holds playlist that will be transferred
     const [playlist, setPlaylist] = useState({
         playlistName: "",
         username: "",
@@ -44,13 +51,27 @@ const DestinationSelect = () => {
         });
     };
 
+    // State variable that holds the list of tracks that could not be transferred
+    const [missingTracks, setMissingTracks] = useState();
+
     // Begin the transferring of the playlist
     const beginTransferPlaylist = () => {
         // Step 1: Retrieve playlist data from sessionStorage
         handleSetPlaylist(JSON.parse(sessionStorage.getItem("playlist")));
 
         // Step 2: call the transferPlaylist function from webService
-        webService.transferPlaylist(token, userAccount.userID, JSON.parse(sessionStorage.getItem("playlist")));
+        let errorTracks;    // Tracks that were not transferred due to some error
+        webService.transferPlaylist(token, userAccount.userID, JSON.parse(sessionStorage.getItem("playlist")))
+                .then(response => {
+                    errorTracks = response;
+                })
+                .then(() => {
+                    setMissingTracks(errorTracks);
+                    
+                    // Step 3: Alert the user that the transfer has been done, and highlight the tracks that were not transferred
+                    setShowSummary(true);
+                });
+
     };
 
     // Get the user's access token once they log in and store it in the state variable
@@ -73,14 +94,13 @@ const DestinationSelect = () => {
     useEffect(() => handleLoggedIn(), [userAccount]);
 
     return (
-        <main>
+        <div className="mainSection mainSectionGreen">
 
             {/* Shows the platform selector, where the user chooses which platform they want to login to */}
             {!loggedIn && (
                 <div>
-                    <h1>Where are we transferring this playlist to?</h1>
+                    <h1>Login to Destination Account</h1>
                     <PlatformSelector />
-                    <button onClick={handleLoggedIn}>Log in</button>
                 </div>)}
 
             
@@ -112,8 +132,10 @@ const DestinationSelect = () => {
                     </div>
                 </div>
             )}
+
+            { showSummary && <TransferSummary playlist={missingTracks}/>}
            
-        </main>
+        </div>
     );
 }
 

@@ -7,10 +7,9 @@ import PlaylistDetails from "../Components/PlaylistDetails";
 const PlaylistConfirm = () => {
 
     return(
-        <main id="playlistSummary">
+        <div className="mainSection mainSectionRed">
             <PlaylistDetails />
-
-        </main>
+        </div>
     );
 }
 

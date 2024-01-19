@@ -1,47 +1,50 @@
- 
+#platformCard {
+  background-color: #394c8a;
+  position: relative;
+  width: 40vw;
+  height: 50vh;
+  margin-left: 30vw;
+  padding: 1vw;
+  border-radius: 2%;
+
+}
+
 #platformGrid {
-    position: relative;
-    height: 22vh;
-    width: 100%;
+    height: 55%;
+    margin: 15% 0;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr;
     column-gap: 1vw;
+    transition: 500ms;
   }
-  
-  .logoContainer {
+  :where(.logoContainer){
     display: flex;
     justify-content: center;
     align-items: center;
     border: 1px solid black;
-    border-radius: 25%;
+    border-radius: 10%;
     background-color: lightyellow;
+    transition: 500ms;
   }
-  
-  .platformLogo {
-    height: 60%;
-    width: 60%;
-  }
-  
-  @keyframes enlarge {
-    0% {
-      width: 20%;
-    }
-    50% {
-      width: 100%;
-    }
-    100% {
-      width: 80%;
-    }
-  }
-  
-  .logoContainer:hover {
+  :where(.logoContainer:hover){
     cursor: pointer;
+    background-color: crimson;
+    border-radius: 0%;
   }
-  
-  .logoContainer:hover > .platformLogo {
-    animation-name: enlarge;
-    animation-duration: 4s;
-    animation-iteration-count: infinite;
-    --webkit-animation-fill-mode: forwards; /* This line makes the animation stay in its final form as long as the mouse is hovering over the div */
+
+  #platformGrid:has(#spotifyButton:hover){
+    grid-template-columns: 1fr 0.5fr 0.5fr;
   }
+  #platformGrid:has(#appleButton:hover){
+    grid-template-columns: 0.5fr 1fr 0.5fr;
+  }
+  #platformGrid:has(#soundcloudButton:hover){
+    grid-template-columns: 0.5fr 0.5fr 1fr;
+  }
+
+
+.platformLogo {
+  height: 60%;
+  width: 60%;
+}

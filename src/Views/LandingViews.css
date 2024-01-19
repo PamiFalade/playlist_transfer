@@ -1,36 +1,26 @@
-
-.landing {
-  width: 75vw;
-  height: 85vh;
-  margin: auto;
-  padding-top: 1vh;
-  padding-bottom: 15%;
-}
-
 h1 {
-  text-align: center;
-  margin: 1vw;
-}
-
-h2 {
-  text-align: center;
-  margin: 0.5vw;
+  font-weight: bold;
 }
 
 .card {
+  background-color: #2e5cab;
   position: relative;
-  width: 50%;
-  height: auto;
-  margin-left: 25%;
+  width: 30vw;
+  height: 25vh;
+  margin-left: 35vw;
   margin-bottom: 2vw;
-  padding: 0.25vw;
+  padding: 1vw;
+
+  font-family: sans-serif;
+  font-weight: bold;
+  color: antiquewhite;
 }
 
 .form {
   position: relative;
-  height: 35%;
-  width: 100%;
-  padding: 3vw;
+  height: 13vh;
+  width: 25vw;
+  padding: 1vh 0vw 1vh;
 }
 
 .form > * {

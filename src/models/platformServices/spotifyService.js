@@ -311,7 +311,8 @@ let count = 1;
             length: sharedService.millisToHoursMinutesAndSeconds(song.track.duration_ms),
             isExplicit: song.track.explicit,
             release_date: song.track.album.release_date,
-            type: song.type
+            type: song.type,
+            isrc: song.track.external_ids.isrc
         });
     });
 
@@ -347,9 +348,33 @@ const createPlaylist = (token, userID, playlistName) => {
   return newPlaylist;
 };
 
-/// Search the track on Spotify and retrieve its URI, which will be used to add the track to the playlist
+/// Search the track on Spotify by its ISRC and retrieve its URI, which will be used to add the track to the playlist
 /// Spotify API: https://developer.spotify.com/documentation/web-api/reference/search
-const searchTrack = async(token, song) => {
+const searchTrackByISRC = async (token, songISRC) => {
+  
+  let queryToEncode = `isrc:${songISRC}`;
+  let encodedQuery = encodeURIComponent(queryToEncode);
+  let results = fetch(`https://api.spotify.com/v1/search?q=${encodedQuery}&type=track&limit=50`, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + token.access_token
+    }
+  }).then(response => {
+    if(response.ok) {
+      console.log("Successfully searched track on Spotify!");
+    }
+    else {
+      console.log("Error with searching on Spotify");
+    }
+    return response.json();
+  }).catch(error => console.log(error));
+
+  return results;
+}
+
+/// Search the track on Spotify by its name and its artist's name(s), and retrieve its URI, which will be used to add the track to the playlist
+/// Spotify API: https://developer.spotify.com/documentation/web-api/reference/search
+const searchTrackByName = async(token, song) => {
 
   // let queryToEncode = `remaster%20track:"${sharedService.extractSongName(song.name)}"%20artist:"${song.artists}"%20album:"${song.album}"`;
   let queryToEncode = `${sharedService.extractSongName(song.name)} - ${song.artists}`;
@@ -384,8 +409,7 @@ let firstResults = searchResults.map((song) => {
     isExplicit: song.explicit
   }
 });
-console.log("Song searched: " + song.name);
-console.log(firstResults);
+
   for(let i=0; i<searchResults.length; i++) {   // Use a for loop instead of a forEach so that we can 'break' out once we've found the right track
     // ORRRR I can check the song.isrc
     if(searchResults[i].name === song.name && searchResults[i].album.name === song.album  
@@ -435,18 +459,23 @@ export const transferPlaylist = async (token, userID, playlist) => {
 
   // Step 1: Find and retrieve the Spotify URI's for all the tracks that will be put into the transferred playlist
   await playlist.tracks.forEach(song => {
-    searchTrack(token, song)
+    if(song.isrc === "") {
+      missingTracks.push(song);
+      return;
+    }
+    try{
+      searchTrackByISRC(token, song.isrc)
       .then((searchResults => {
-        let track = findTrack(searchResults.tracks, song);
-        if(track.spotifyURI !== ""){
-          tracksURIArray.push(track.spotifyURI);
-        }
-        else {
-          missingTracks.push(track.songName);
-        }
+        let trackURI = searchResults.tracks.items[0].uri;
+        tracksURIArray.push(trackURI);
       }));
+    }
+    catch(error){
+      missingTracks.push(song.songName);
+    }
+    
   });
-console.log(missingTracks);
+
   // Step 2: Create the playlist in the Spotify account and retrieve its Spotify ID
   await createPlaylist(token, userID, newPlaylistName)
     .then(newPlaylistResponse => {
@@ -481,4 +510,5 @@ console.log(missingTracks);
       });
   }
   
+  return missingTracks;
 };
