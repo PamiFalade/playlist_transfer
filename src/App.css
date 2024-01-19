@@ -59,3 +59,10 @@ h1 {
   width: 12.5%;
   margin-left: 62%;
 }
+
+.loadingSymbol {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
