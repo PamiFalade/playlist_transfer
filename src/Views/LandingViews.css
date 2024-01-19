@@ -1,40 +1,141 @@
-h1 {
-  font-weight: bold;
-}
-
-.card {
-  background-color: #2e5cab;
-  position: relative;
-  width: 30vw;
-  height: 25vh;
-  margin-left: 35vw;
-  margin-bottom: 2vw;
-  padding: 1vw;
-
-  font-family: sans-serif;
-  font-weight: bold;
-  color: antiquewhite;
-}
-
-.form {
-  position: relative;
-  height: 13vh;
-  width: 25vw;
-  padding: 1vh 0vw 1vh;
-}
-
-.form > * {
-  position: absolute;
-}
-
-.entry {
-  left: 0;
-  top: 20%;
+body {
+  padding: 5%;
   width: 100%;
+  max-height: 100%;
 }
 
-.submitButton {
-  bottom: 0;
-  right: 0;
+.Landing {
+  width: 60%;
+  max-height: 60%;
+  position: relative;
+  left: 20%;
+  top: 20%;
+  padding-top: 5%;
+  padding-bottom: 5%;
+  border: 1px solid red;
 }
 
+.LandingBody {
+  width: 100%;
+  height: 100%;
+  margin-top: 15%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.transferOption {
+  width: 30%;
+  height: 60%;
+  display: flex;
+  flex-direction: row;
+}
+
+@keyframes enlarge {
+  0% {
+    width: 30%;
+  }
+  100% {
+    width: 35%;
+  }
+}
+
+.actionButton:hover {
+  animation-name: enlarge;
+  animation-duration: 2s;
+  --webkit-animation-fill-mode: forwards; /* This line makes the animation stay in its final form as long as the mouse is hovering over the div */
+}
+
+.PlaylistDisplayModal {
+  height: 100%;
+}
+
+.PlaylistDisplayModalBody {
+  width: 100%;
+  height: 60vh;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  padding: 0px;
+}
+
+.leftSide {
+  height: 100%;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.rightSide {
+  height: 100%;
+  width: 50%;
+  overflow-y: scroll;
+}
+
+.trackDisplay {
+  width: 100%;
+  height: 5%;
+  background-color: rgb(214, 210, 210);
+  border: 1px solid black;
+  margin: 0;
+  padding: 1px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+/* .LoginButton {
+} */
+
+.LoginContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.LoginGrid {
+  width: 80%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 50% 50%;
+  grid-template-rows: 50% 50%;
+}
+
+.loginButton {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10% 0% 10%;
+}
+
+@keyframes enlargeLogin {
+  0% {
+    height: 100%;
+  }
+  50% {
+    height: 125%;
+  }
+  100% {
+    height: 100%;
+  }
+}
+
+.loginButton:hover {
+  cursor: pointer;
+  animation-name: enlargeLogin;
+  animation-duration: 1s;
+  --webkit-animation-fill-mode: forwards; /* This line makes the animation stay in its final form as long as the mouse is hovering over the div */
+}
+
+.AccountInfo {
+  width: 20%;
+  color: white;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
