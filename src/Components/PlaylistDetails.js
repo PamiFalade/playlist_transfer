@@ -56,12 +56,13 @@ const PlaylistDetails = () => {
     /// that hold the playlist and indicate if the playlist has been found
     const handleSetPlaylist = async (retrievedPlaylist) => {
         // Made extractSongInfo() available at this level because the SoundCloud API can't be used in the same way as the others
-        retrievedPlaylist = await webService.extractSongInfo(sourcePlatform, retrievedPlaylist); // Get the important details of each song and put in general template
+        retrievedPlaylist = await webService.extractSongInfo(sourcePlatform, retrievedPlaylist)      // Get the important details of each song and put in general template
+            .then(() => {
+                setLoading(false);
+                setPlaylist(retrievedPlaylist);
+                setFoundPlaylist(true);
+            }); 
 
-
-        setLoading(false);
-        setPlaylist(retrievedPlaylist);
-        setFoundPlaylist(true);
      };
  
     /// SoundCloud Widget player stuff
@@ -113,7 +114,7 @@ const PlaylistDetails = () => {
 
     /// Call the webService methods that fetch the Spotify token and then fetch the requested playlist
     const loadSpotifyPlaylist = async() => {
-        let token;
+        let token = "";
 
         await webService.fetchToken(sourcePlatform)
             .then((tokenResponse) => {
@@ -128,6 +129,14 @@ const PlaylistDetails = () => {
             });        
     };
 
+    const loadPlaylist = async() => {
+        await webService.fetchPlaylist(sourcePlatform, "", playlistID)
+            .then((playlistResponse) => {
+                console.log(playlistResponse);
+                handleSetPlaylist(playlistResponse);
+            });
+    };
+
     /// Load the SoundCloud Widget API, or fetch the playlists through the other platforms' API's
     useEffect(() => {
         if(sourcePlatform === "soundcloud") {
@@ -135,6 +144,9 @@ const PlaylistDetails = () => {
         }
         else if(sourcePlatform === "spotify") {
         loadSpotifyPlaylist();
+        }
+        else {
+            loadPlaylist();
         }
 
     }, [sourcePlatform, playlistID]);
@@ -146,7 +158,7 @@ const PlaylistDetails = () => {
             {/* Loading symbol */}
             { loading && 
                 <div className="loadingSymbol">
-                    <h2>Loading...</h2>
+                    <h2>Fetching Playlist...</h2>
                     <ScaleLoader 
                         color="antiquewhite"
                         loading={loading}

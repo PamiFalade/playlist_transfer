@@ -3,6 +3,7 @@ import * as spotify from "./platformServices/spotifyService";
 import * as apple from "./platformServices/appleService";
 import * as deezer from "./platformServices/deezerService";
 import * as soundcloud from "./platformServices/soundcloudService";
+import * as youtube from "./platformServices/youtubeService";
 
 /// Object used to store the clientIDs and secrets of the various platforms
 const credentials = {
@@ -34,6 +35,9 @@ const extractPlaylistSource = (link) => {
     }
     else if(link.startsWith("https://soundcloud.com/")){
     source = "soundcloud";
+    }
+    else if(link.startsWith("https://music.youtube.com/playlist?")){
+      source = "youtube";
     };
     
     return source;
@@ -53,6 +57,9 @@ const extractPlaylistID = (source, link) => {
       break;
     case "soundcloud":
       playlistID = soundcloud.extractPlaylistID(link);
+      break;
+    case "youtube":
+      playlistID = youtube.extractPlaylistID(link);
       break;
     default:
       playlistID = "";
@@ -90,6 +97,9 @@ export const fetchPlaylist = (source, token, playlistID) => {
     case "spotify":
       playlist = spotify.fetchPlaylistAndTracks(token, playlistID);
       break;
+    case "youtube":
+      playlist = youtube.fetchPlaylistAndTracks(playlistID);
+      break;
     default:
       playlist = null;
   }
@@ -109,6 +119,8 @@ export const extractSongInfo = async (source, playlist) => {
     case "soundcloud":
       formattedPlaylist = await soundcloud.extractSongInfo(playlist);
       break;
+    case "youtube":
+      formattedPlaylist = await youtube.extractSongInfo(playlist);
     default:
       return;
   }

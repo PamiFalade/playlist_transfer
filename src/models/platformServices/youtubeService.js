@@ -1,19 +1,20 @@
 import { Buffer } from "buffer";
+import { parse } from "tinyduration";
 import * as sharedService from "../sharedService";
 
-const regexPattern = "(?<=playlist\/)[A-Za-z0-9]*";
-const clientID = "9a5c9f439d464286b0b08e0f40de4f4a";
-const secret = "c24f98c34e26485db177b530895c1769";
-const spotify_authorize_endpoint = "https://accounts.spotify.com/authorize";
+const regexPattern = "(?<=list\=)[A-Za-z0-9\-]*";
+const apiKey = "AIzaSyAtEt3TZA-bkv5fQZ4x7cg_MhJI1cRgM-k";
+const clientID = "1054375184671-ejm71f93dt6i3hh1ou4na743n2revdrp.apps.googleusercontent.com";
+const secret = "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";
+const state_parameter_passthrough_value = "accessGranted";
+const youtube_authorize_endpoint = "https://accounts.google.com/o/oauth2/v2/auth";
 const redirect_uri = "http://localhost:3000/destination-select";
 
+/// Scopes are already defined on Google Cloud
+/// https://console.cloud.google.com/apis/credentials/oauthclient?previousPage=%2Fapis%2Fcredentials%3Fproject%3Dplaylist-transfer-411715%26supportedpurview%3Dproject&project=playlist-transfer-411715&supportedpurview=project
 const SCOPES = [
-  "user-library-read",
-  "user-library-modify",
-  "playlist-read-private",
-  "playlist-read-collaborative",
-  "playlist-modify-public",
-  "playlist-modify-private"
+  "https://www.googleapis.com/auth/youtube",
+  "https://www.googleapis.com/auth/youtube.readonly"
 ];
 
 /// Used to extract the playlist ID from the Spotify share link using Regex
@@ -24,38 +25,23 @@ export const extractPlaylistID = (link) => {
     return playlistID;
 };
 
-/// Gets the app's Spotify token using the Spotify API
-/// Spotify API: https://developer.spotify.com/documentation/web-api/tutorials/client-credentials-flow
+/// Gets the app's YouTube token using the YouTube API
+/// YouTube API: https://developer.spotify.com/documentation/web-api/tutorials/client-credentials-flow
 export const fetchToken = () => {
-    let tokenResponse = fetch("https://accounts.spotify.com/api/token", {
-        method: "POST",
-        headers: {
-            "Content-type": "application/x-www-form-urlencoded",
-        },
-        body: `grant_type=client_credentials&client_id=${clientID}&client_secret=${secret}`
-    }).then((response) => {
-        if(response.ok){
-            console.log("Successfully fetched Spotify token!");
-        }
-        else {
-            console.log("Token Fetch Failed");
-        }
-        return response.json();
-    } ).catch((error) => console.log(error));
 
-    return tokenResponse;
 };
 
-/// Redirect to the Spotify API's user login and authorization page
-/// Spotify API: https://developer.spotify.com/documentation/web-api/tutorials/code-pkce-flow
+/// Redirect to the YouTube API's user login and authorization page
+/// YouTube API: https://developers.google.com/youtube/v3/guides/auth/client-side-web-apps
 export const redirectToUserAuthorization = () => {
-  let authorizeURL = spotify_authorize_endpoint + "?client_id=" + clientID;
-  authorizeURL += "&response_type=code";
+  let authorizeURL = youtube_authorize_endpoint + "?scope=" + SCOPES.join(" ");
+  authorizeURL += "&include_granted_scopes=true";
+  authorizeURL += "&state=" + state_parameter_passthrough_value;
   authorizeURL += "&redirect_uri=" + encodeURI(redirect_uri);
-  authorizeURL += "&show_dialog=true";
-  authorizeURL += "&scope=" + SCOPES.join(" ");
+  authorizeURL += "&response_type=token";
+  authorizeURL += "&client_id=" + clientID;
 
-  window.location.href = authorizeURL; // Show Spotify's authorization screen.
+  window.location.href = authorizeURL; // Show YouTube's authorization screen.
 };
   
 // Helper function for parsing code from the return URL after getting authorization from the user
@@ -120,23 +106,7 @@ export const getUserAuthorizationToken = () => {
 /// Fetch the user's account name and profile picture
 /// Spotify API: https://developer.spotify.com/documentation/web-api/reference/get-current-users-profile
 const getUserProfile = async (token) => {
-  let profileResponse = fetch("https://api.spotify.com/v1/me", {
-    method: "GET",
-    headers: {
-      "Content-type": "application/json",
-      Authorization: "Bearer " + token.access_token,
-    }
-  }).then((response) => {
-    if(response.ok){
-      console.log("Successfully fetched user's Spotify profile!");
-    }
-    else {
-      console.log("Error with retrieving user's Spotify profile");
-    }
-    return response.json();
-  }).catch((error) => console.log(error));
 
-  return profileResponse;
 };
 
 /// Fetch the user's list of playlists
@@ -198,39 +168,37 @@ export const getUserAccount = async(token) => {
   return userAccount;
 };
 
-/// SUMMARY: Fetch the playlist info and its first 100 tracks
-/// DETAILS: This Spotify API endpoint has a 100-track limit, so this API call will not be sufficient for playlists that have 100+ tracks
-/// Spotify API: https://developer.spotify.com/documentation/web-api/reference/get-playlist
-const fetchPlaylist = async (token, playlistID) => {
-  let playlist = await fetch(`https://api.spotify.com/v1/playlists/${playlistID}`, 
+/// SUMMARY: Fetch the playlist information
+/// DETAILS: This YouTube API endpoint only returns details of the playlist, including its name, the number of tracks, etc.
+/// YouTube API: https://developers.google.com/youtube/v3/docs/playlists/list
+const fetchPlaylist = async (playlistID) => {
+  let playlist = await fetch(`https://youtube.googleapis.com/youtube/v3/playlists?part=snippet%2CcontentDetails%2Cid%2Cstatus&id=${playlistID}&key=${apiKey}`, 
   {
       method: "GET",
       headers: {
-          "Content-type": "application/json",
-          Authorization: "Bearer " + token.access_token,
+        "Content-type": "application/json",
       }
   }).then((response) => {
       if (response.ok) {
-          console.log("Successfully fetched Spotify playlist!");
+          console.log("Successfully fetched YouTube playlist!");
       }
       else {
-          console.log("Error with retrieving Spotify playlist");
+          console.log("Error with retrieving YouTube playlist");
       }
       return response.json();
   }).catch((error) => console.log(error));
 
-  return playlist;
+  return playlist.items[0];
 };
 
-/// SUMMARY: Fetch the tracks that were not retrieved from the playlist due to the limit
-/// DETAILS: For playlists that have more than 100 tracks, this function will be used to retrieve all the tracks past #100
-/// Spotify API: https://developer.spotify.com/documentation/web-api/reference/get-playlists-tracks 
-const fetchExtraTracks = async (token, playlistID, offset, limit=50) => {
-  let extraTracks = fetch(`https://api.spotify.com/v1/playlists/${playlistID}/tracks?limit=50&offset=${offset}`, 
+/// SUMMARY: Fetch a playlist's tracks
+/// YouTube API: https://developers.google.com/youtube/v3/docs/playlistItems/list
+const fetchTracks = async (playlistID, offset, limit=50) => {
+  let tracks = fetch(`https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet%2CcontentDetails%2Cid%2Cstatus&maxResults=50&playlistId=${playlistID}&key=${apiKey}`, 
   {
     method: "GET",
     headers: {
-      Authorization: "Bearer " + token.access_token
+        "Content-type": "application/json",
     }
   }).then(response => {
     if(response.ok){
@@ -242,36 +210,37 @@ const fetchExtraTracks = async (token, playlistID, offset, limit=50) => {
     return response.json();
   }).catch(error => console.log(error));
 
-  return extraTracks;
+  return tracks;
 };
 
-/// SUMMARY: Fetch the requested playlist with the app's Spotify token and the playlist's ID
-/// DETAILS: Calls the fetchPlaylist() method. If that Spotify API call was unable to fetch all the tracks, then it will call the fetchExtraTracks() method as many times as necessary
-export const fetchPlaylistAndTracks = async (token, playlistID) => {
+/// SUMMARY: Fetch the requested playlist with the playlist's ID
+/// DETAILS: 
+export const fetchPlaylistAndTracks = async (playlistID) => {
 
   let playlist, numTracksFetched, totalNumTracks;
   let extraTracks = [];
   let extraTracksLimit = 50;    // There is a limit on the number of items that is retrieved from a playlist. The maximum for the Spotify API call in fetchExtraTracks() is 50
 
   // Get the playlist 
-  playlist = await fetchPlaylist(token, playlistID);
-  numTracksFetched = playlist.tracks.items.length;
-  totalNumTracks = playlist.tracks.total;
+  playlist = await fetchPlaylist(playlistID);
+  
+  totalNumTracks = playlist.contentDetails.itemCount;
+  numTracksFetched = 0;
 
-  // If the playlist has more tracks than the Playlist API call's limit, get the rest of them
+  // If the playlist has more tracks than the YouTube API call's limit, get the rest of them
   let nextBatch;    // The variable that will hold the next set of tracks that are fetched
   while(numTracksFetched < totalNumTracks) {                // While not all the tracks have been fetched, keep calling fetchExtraTracks()
-    nextBatch = await fetchExtraTracks(token, playlistID, numTracksFetched, extraTracksLimit);
+    nextBatch = await fetchTracks(playlistID, numTracksFetched, extraTracksLimit);
     numTracksFetched += extraTracksLimit;
     extraTracks.push(...nextBatch.items);
   }
 
   let fullPlaylist = { 
-    playlistName: playlist.name,
-    username: playlist.owner.display_name,
+    playlistName: playlist.snippet.title,
+    username: playlist.snippet.channelTitle,
     id: playlistID,
-    tracks: [...playlist.tracks.items, ...extraTracks],
-    image: playlist.images[0].url
+    tracks: [...extraTracks],
+    image: playlist.snippet.thumbnails.high.url
   };
 
   return fullPlaylist;
@@ -289,63 +258,81 @@ const extractSongArtists = (song) => {
   return artistList;
 };
 
-/// Extracts the song's title, image, artist(s), and length, and checks if it is explicit from
-/// the tracklist that comes in the Spotify playlist object.
-export const extractSongInfo = (playlist) => {
+/// SUMMARY: Helper function that searches up the videos of each song specified by the songIDs.
+/// DETAILS: This function is used to ultimately gain the durations of each song.
+/// YouTube API: https://developers.google.com/youtube/v3/docs/videos/list
+const getSongDurations = async (songIDs) => {
+
+    let encodedSongIDs = encodeURIComponent(songIDs);
+    let videos = fetch(`https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cid%2Cstatus&id=${encodedSongIDs}&key=${apiKey}`,
+    {
+        method: "GET",
+        headers: {
+            'Content-type': 'application/json'
+        }
+    }).then(response => {
+        if(response.ok){
+          console.log("Successfully got video information!");
+        }
+        else {
+          console.log("Error with getting video information...");
+        }
+        return response.json();
+      }).catch(error => console.log(error));
+
+    return videos;
+}
+
+/// SUMMARY: Extracts the song's title, image, artist(s), and length, from the tracklist that comes in the Spotify playlist object.
+export const extractSongInfo = async (playlist) => {
     let formattedSongArray = [];
-    let totalDuration = 0;  // The total run time of the playlist 
+    let videoIDs = [];      // Will be a comma-separated list of the video IDs, which will be used to find the duration of each YouTube video
+    let totalDuration = 0;  // The total run time of the playlist in ms
+    
+    for(let i=0; i<playlist.tracks.length; i++){
 
-    playlist.tracks.forEach(song => {
-        // Get the list of artists for the song
-        let artistList = extractSongArtists(song);
-
-        totalDuration += song.track.duration_ms;
+        // Add the video ID to the list
+        videoIDs.push(playlist.tracks[i].snippet.resourceId.videoId);
 
         // Add the song object to the array
         formattedSongArray.push({
-            name: song.track.name,
-            album: song.track.album.name,
-            image: song.track.album.images.length > 0 ? song.track.album.images[0].url : "",
-            artists: artistList,
-            length_ms: song.track.duration_ms,
-            length: sharedService.millisToHoursMinutesAndSeconds(song.track.duration_ms),
-            isExplicit: song.track.explicit,
-            release_date: song.track.album.release_date,
-            type: song.type,
-            isrc: song.track.external_ids.isrc
+            name: playlist.tracks[i].snippet.title,
+            album: playlist.tracks[i].snippet.description,
+            image: playlist.tracks[i].snippet.thumbnails.default.url,
+            artists: playlist.tracks[i].snippet.videoOwnerChannelTitle,
+            length_ms: 0,
+            length: "",
+            isExplicit: null,
+            release_date: playlist.tracks[i].contentDetails.videoPublishedAt,
+            type: null,
+            isrc: null
         });
-    });
+    }
+    // Get the lengths of each song
+    await getSongDurations(videoIDs.join(","))
+        .then(durationsResponse => {
+            for(let i=0; i<durationsResponse.items.length; i++){
+                
+                // Use tinyduration package to parse the video durations, which are stored in ISO 8601 format
+                let duration = parse(durationsResponse.items[i].contentDetails.duration);
+                let duration_ms = (duration.hours ?? 0) * 60 * 60 * 1000 + (duration.minutes ?? 0) * 60 * 1000 + (duration.seconds ?? 0) * 1000;
+                totalDuration += duration_ms;
 
-    playlist.tracks = [...formattedSongArray];
-    playlist.length = sharedService.millisToHoursMinutesAndSeconds(totalDuration);
+                formattedSongArray[i].length_ms = duration_ms;
+                formattedSongArray[i].length = sharedService.millisToHoursMinutesAndSeconds(duration_ms);
+            }
+        }).then(() => {
+            playlist.tracks = [...formattedSongArray];
+            playlist.length = sharedService.millisToHoursMinutesAndSeconds(totalDuration);
+        });
 
     return playlist;
 };
 
-/// Create the playlist on Spotify
-/// https://developer.spotify.com/documentation/web-api/reference/create-playlist
+/// Create the playlist on YouTube Music
+/// YouTube API:
 const createPlaylist = (token, userID, playlistName) => {
-  let newPlaylist = fetch(`https://api.spotify.com/v1/users/${userID}/playlists`, {
-    method: "POST",
-    headers: {
-      Authorization: "Bearer " + token.access_token,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({    // Must stringify the object for the body, or else it won't work
-      "name": playlistName,
-      "description": "Playlist copied by playlist-transfer",
-    })
-  }).then(response => {
-    if(response.ok){
-      console.log("Successfully created the playlist on Spotify!");
-    }
-    else {
-      console.log("Error with creating playlist on Spotify");
-    }
-    return response.json();
-  }).catch(error => console.log(error));
-
-  return newPlaylist;
+  
 };
 
 /// Search the track on Spotify by its ISRC and retrieve its URI, which will be used to add the track to the playlist
