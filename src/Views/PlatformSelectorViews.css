@@ -39,7 +39,7 @@
   #platformGrid:has(#appleButton:hover){
     grid-template-columns: 0.5fr 1fr 0.5fr;
   }
-  #platformGrid:has(#soundcloudButton:hover){
+  #platformGrid:has(#youtubeButton:hover){
     grid-template-columns: 0.5fr 0.5fr 1fr;
   }
 

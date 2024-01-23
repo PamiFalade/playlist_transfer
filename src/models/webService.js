@@ -136,6 +136,9 @@ export const redirectToUserAuthorization = (source) => {
     case "spotify":
       spotify.redirectToUserAuthorization();
       break;
+    case "youtube":
+      console.log("JEEPERS");
+      break;
     default:
       break;
   };

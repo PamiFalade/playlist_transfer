@@ -17,8 +17,8 @@ const PlatformSelector = () => {
             case "appleButton":
                 platform = "apple";
                 break;
-            case "soundcloudButton":
-                platform = "soundcloud";
+            case "youtubeButton":
+                platform = "youtube";
                 break;
         };
 
@@ -35,8 +35,8 @@ const PlatformSelector = () => {
                 <div className="logoContainer" id="appleButton" onClick={() => {handleLogin("appleButton")}}>
                     <img className="platformLogo" src="apple-music.svg" />
                 </div>
-                <div className="logoContainer" id="soundcloudButton" onClick={() => {handleLogin("soundcloudButton")}}>
-                    <img  className="platformLogo" src="soundcloud.svg" />
+                <div className="logoContainer" id="youtubeButton" onClick={() => {handleLogin("youtubeButton")}}>
+                    <img  className="platformLogo" src="youtube-music.svg" />
                 </div>
 
             </div>
