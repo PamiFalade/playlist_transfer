@@ -121,6 +121,7 @@ export const extractSongInfo = async (source, playlist) => {
       break;
     case "youtube":
       formattedPlaylist = await youtube.extractSongInfo(playlist);
+      break;
     default:
       return;
   }
@@ -131,13 +132,12 @@ export const extractSongInfo = async (source, playlist) => {
 
 /// Get the user to log in to their account on the appropriate platform and authorize the app to have the specified access 
 export const redirectToUserAuthorization = (source) => {
-  console.log(source);
   switch(source){
     case "spotify":
       spotify.redirectToUserAuthorization();
       break;
     case "youtube":
-      console.log("JEEPERS");
+      youtube.redirectToUserAuthorization();
       break;
     default:
       break;
@@ -146,8 +146,19 @@ export const redirectToUserAuthorization = (source) => {
 };
 
 /// Get the token that is provided once the user authorizes the application
-export const getUserAuthorizationToken = (source) => {
-  let authToken = spotify.getUserAuthorizationToken();
+export const getUserAuthorizationToken = async (source) => {
+  let authToken;
+
+  switch(source){
+    case "spotify":
+      authToken = spotify.getUserAuthorizationToken();
+      break;
+    case "youtube":
+      authToken = youtube.getUserAuthorizationToken();
+      break;
+    default:
+      break;
+  };
 
   return authToken;
 };
@@ -159,8 +170,8 @@ export const getUserAccount = (token, source) => {
     case "spotify":
       userAccount = spotify.getUserAccount(token);
       break;
-    case "apple":
-      // userDetails = apple.getUserDetails(token);
+    case "youtube":
+      userAccount = youtube.getUserAccount(token);
       break;
     default:
       break;

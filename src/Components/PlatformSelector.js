@@ -9,20 +9,22 @@ const PlatformSelector = () => {
 
     const handleLogin = (id) => {
         console.log(id);
-        let platform = "";
+        let destPlatform = "";
         switch(id){
             case "spotifyButton":
-                platform = "spotify";
+                destPlatform = "spotify";
                 break;
             case "appleButton":
-                platform = "apple";
+                destPlatform = "apple";
                 break;
             case "youtubeButton":
-                platform = "youtube";
+                destPlatform = "youtube";
                 break;
         };
 
-        redirectToUserAuthorization(platform);
+        redirectToUserAuthorization(destPlatform);
+        sessionStorage.setItem("destPlatform", JSON.stringify(destPlatform));
+
     };
 
     return(

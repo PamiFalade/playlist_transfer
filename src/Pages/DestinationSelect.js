@@ -76,11 +76,14 @@ const DestinationSelect = () => {
 
     // Get the user's access token once they log in and store it in the state variable
     useEffect(() => {
-        if (window.location.search) {
-            webService.getUserAuthorizationToken().then((token) => {
-                if (token != "" && token != null) {
+        if (window.location.search || window.location.hash) {
+            let destPlatform = JSON.parse(sessionStorage.getItem("destPlatform"));      // Get the destination platform that was saved to the session when the button from PlatformSelector is clicked
+            webService.getUserAuthorizationToken(destPlatform)
+            .then((token) => {
+                if (token !== "" && token !== null) {
                     setToken(token);
-                    webService.getUserAccount(token, "spotify").then(
+                    webService.getUserAccount(token, destPlatform)
+                    .then(
                         (retrievedUser) => {
                             setUserAccount(retrievedUser);
                         }
@@ -91,7 +94,7 @@ const DestinationSelect = () => {
     }, [window.location]);
 
     // Set logged in to true when userAccount has been set
-    useEffect(() => handleLoggedIn(), [userAccount]);
+    useEffect(() => setLoggedIn(true), [userAccount]);
 
     return (
         <div className="mainSection mainSectionGreen">

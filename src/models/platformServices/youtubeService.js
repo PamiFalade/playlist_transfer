@@ -46,84 +46,60 @@ export const redirectToUserAuthorization = () => {
   
 // Helper function for parsing code from the return URL after getting authorization from the user
 const getCode = () => {
-  const queryString = window.location.search;
+  const queryString = window.location.hash;
   let code = "";
   if (queryString.length > 0) {
     const urlParams = new URLSearchParams(queryString);
-    code = urlParams.get("code");
+    code = urlParams.get("access_token");
   }
+  
   return code;
 };
 
 /// Retrieve token that is returned when user logs in and authorizes the app
-/// Spotify API: https://developer.spotify.com/documentation/web-api/tutorials/code-flow
 export const getUserAuthorizationToken = () => {
-  let code = getCode(); //Get the code from the return of the login
-
-  var today = new Date();
-
-  let stringToEncode = `${clientID}:${secret}`;
-  let tokenResponse = fetch("https://accounts.spotify.com/api/token", {
-    method: "POST",
-    headers: {
-      "Content-type": "application/x-www-form-urlencoded",
-      Authorization: `Basic ${Buffer.from(stringToEncode).toString("base64")}`,
-    },
-    body: `grant_type=authorization_code&code=${code}&redirect_uri=${redirect_uri}`,
-  })
-    .then((tokenResponse) => {
-      if (tokenResponse.ok) {
-        console.log(
-          "Successfully obtained access token " +
-            today.getHours() +
-            ":" +
-            today.getMinutes() +
-            ":" +
-            today.getSeconds() +
-            "." +
-            today.getMilliseconds()
-        );
-        return tokenResponse.json();
-      } else
-        console.log(
-          "Error with retrieving access token " +
-            today.getHours() +
-            ":" +
-            today.getMinutes() +
-            ":" +
-            today.getSeconds() +
-            "." +
-            today.getMilliseconds()
-        );
-      return null;
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-  return tokenResponse;
+  let access_token = getCode(); //Get the code from the return of the login
+  
+  return access_token;
 };
 
-/// Fetch the user's account name and profile picture
-/// Spotify API: https://developer.spotify.com/documentation/web-api/reference/get-current-users-profile
+/// SUMMARY: Fetch the user's account name and profile picture
+/// YouTube API: https://developers.google.com/youtube/v3/docs/channels/list
 const getUserProfile = async (token) => {
-
+    let profileResponse = fetch(`https://youtube.googleapis.com/youtube/v3/channels?part=snippet%2CcontentDetails%2Cstatistics&mine=true&key=${apiKey}`, {
+        method: "GET",
+        headers: {
+            Authorization: "Bearer " + token,
+            "Content-type": "application/json"
+        }
+    }).then((response) => {
+        if(response.ok){
+          console.log("Successfully fetched user's YouTube channel!");
+        }
+        else {
+          console.log("Error with retrieving user's YouTube channl");
+        }
+        return response.json();
+      }).catch((error) => console.log(error));
+    
+    return profileResponse;
 };
 
-/// Fetch the user's list of playlists
-/// Spotify API: https://developer.spotify.com/documentation/web-api/reference/get-a-list-of-current-users-playlists
+/// SUMMARY: Fetch the user's list of playlists
+/// YouTube API: https://developers.google.com/youtube/v3/docs/playlists/list
 const getUserPlaylists = async (token) => {
-  let playlistResponse = fetch("https://api.spotify.com/v1/me/playlists", {
+  let playlistResponse = fetch(`https://youtube.googleapis.com/youtube/v3/playlists?part=snippet%2CcontentDetails&maxResults=25&mine=true&key=${apiKey}`, {
     method: "GET",
     headers: {
       "Content-type": "application/json",
-      Authorization: "Bearer " + token.access_token
+      Authorization: "Bearer " + token
     }
   }).then((response) => {
     if(response.ok) {
-      console.log("Successfully fetched user's list of Spotify playlists!");
+      console.log("Successfully fetched user's list of YouTube playlists!");
     }
     else {
-      console.log("Error with retrieving user's list of Spotify playlists")
+      console.log("Error with retrieving user's list of YouTube playlists")
     }
     return response.json();
   }).catch((error) => console.log(error));
@@ -143,9 +119,9 @@ export const getUserAccount = async(token) => {
 
   // Get the user's username and profile image
   await getUserProfile(userAuthToken).then((profileResponse) => {
-    userAccount.username = profileResponse.display_name;
-    userAccount.userID = profileResponse.id;
-    userAccount.profileImg = profileResponse.images[0].url;
+    userAccount.username = profileResponse.items[0].snippet.title;
+    userAccount.userID = profileResponse.items[0].id;
+    userAccount.profileImg = profileResponse.items[0].snippet.thumbnails.high.url;
   });
 
   // Get the list of playlists saved in the user's account, then extract only necessary info for each playlist and add them to the userAccouunt object that will be returned
@@ -154,11 +130,11 @@ export const getUserAccount = async(token) => {
     playlistResponse.items.forEach(playlist => {
 
       userAccount.playlists.push({
-        playlistName: playlist.name,
-        username: playlist.owner.display_name,
+        playlistName: playlist.snippet.title,
+        username: playlist.snippet.channelTitle,
         id: playlist.id,
         tracks: [],
-        image: playlist.images[0].url,
+        image: playlist.snippet.thumbnails.default.url,
         length: ""
       });
 

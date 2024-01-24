@@ -294,7 +294,6 @@ const extractSongArtists = (song) => {
 export const extractSongInfo = (playlist) => {
     let formattedSongArray = [];
     let totalDuration = 0;  // The total run time of the playlist 
-
     playlist.tracks.forEach(song => {
         // Get the list of artists for the song
         let artistList = extractSongArtists(song);
