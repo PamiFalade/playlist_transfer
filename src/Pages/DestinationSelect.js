@@ -94,7 +94,7 @@ const DestinationSelect = () => {
     }, [window.location]);
 
     // Set logged in to true when userAccount has been set
-    useEffect(() => setLoggedIn(true), [userAccount]);
+    useEffect(() => handleLoggedIn, [userAccount]);
 
     return (
         <div className="mainSection mainSectionGreen">
