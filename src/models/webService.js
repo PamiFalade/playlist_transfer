@@ -164,14 +164,14 @@ export const getUserAuthorizationToken = async (source) => {
 };
 
 /// Use the user authorization token to get their account i.e., the account name, their playlists
-export const getUserAccount = (token, source) => {
+export const getUserAccount = async (token, source) => {
   let userAccount;
   switch(source){
     case "spotify":
-      userAccount = spotify.getUserAccount(token);
+      userAccount = await spotify.getUserAccount(token);
       break;
     case "youtube":
-      userAccount = youtube.getUserAccount(token);
+      userAccount = await youtube.getUserAccount(token);
       break;
     default:
       break;
@@ -187,10 +187,20 @@ export const extractSongTitle = (source, title) => {
 };
 
 
-export const transferPlaylist = async (token, userID, playlist) => {
+export const transferPlaylist = async (destPlatform, token, userID, playlist) => {
   let missingTracks;  // The list of songs that were not transferred due to an error
 
-  missingTracks = await spotify.transferPlaylist(token, userID, playlist);
+  switch(destPlatform){
+    case "spotify":
+      missingTracks = await spotify.transferPlaylist(token, userID, playlist);
+      break;
+    case "youtube":
+      missingTracks = await youtube.transferPlaylist(token, userID, playlist);
+      break;
+    default:
+      break;
+  };
+
 
   return missingTracks;
 };

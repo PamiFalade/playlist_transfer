@@ -9,7 +9,7 @@ import TransferSummary from "../Components/TransferSummary.js";
 const DestinationSelect = () => {
 
     // State variable that indicates if the user has given authorization on an account on a platform
-    const [loggedIn, setLoggedIn] = useState(true);
+    const [loggedIn, setLoggedIn] = useState(false);
     const handleLoggedIn = () => setLoggedIn(!loggedIn);
 
     // State variable that contains data from the account that the user is currently logged into
@@ -55,13 +55,14 @@ const DestinationSelect = () => {
     const [missingTracks, setMissingTracks] = useState();
 
     // Begin the transferring of the playlist
-    const beginTransferPlaylist = () => {
+    const beginTransferPlaylist = async () => {
         // Step 1: Retrieve playlist data from sessionStorage
         handleSetPlaylist(JSON.parse(sessionStorage.getItem("playlist")));
+        let destPlatform = JSON.parse(sessionStorage.getItem("destPlatform"));  // Ideally, this would be a state variable, or even a global variable because this is also used in the useEffect hook. But neither work
 
         // Step 2: call the transferPlaylist function from webService
         let errorTracks;    // Tracks that were not transferred due to some error
-        webService.transferPlaylist(token, userAccount.userID, JSON.parse(sessionStorage.getItem("playlist")))
+        await webService.transferPlaylist(destPlatform, token, userAccount.userID, JSON.parse(sessionStorage.getItem("playlist")))
                 .then(response => {
                     errorTracks = response;
                 })
@@ -77,24 +78,21 @@ const DestinationSelect = () => {
     // Get the user's access token once they log in and store it in the state variable
     useEffect(() => {
         if (window.location.search || window.location.hash) {
-            let destPlatform = JSON.parse(sessionStorage.getItem("destPlatform"));      // Get the destination platform that was saved to the session when the button from PlatformSelector is clicked
+            let destPlatform = JSON.parse(sessionStorage.getItem("destPlatform")); // Get the destination platform that was saved to the session when the button from PlatformSelector is clicked
             webService.getUserAuthorizationToken(destPlatform)
             .then((token) => {
                 if (token !== "" && token !== null) {
                     setToken(token);
                     webService.getUserAccount(token, destPlatform)
-                    .then(
-                        (retrievedUser) => {
+                    .then((retrievedUser) => {
                             setUserAccount(retrievedUser);
+                            setLoggedIn(true);
                         }
                     );
                 }
             });
         }
     }, [window.location]);
-
-    // Set logged in to true when userAccount has been set
-    useEffect(() => handleLoggedIn, [userAccount]);
 
     return (
         <div className="mainSection mainSectionGreen">

@@ -77,10 +77,10 @@ const getUserProfile = async (token) => {
           console.log("Successfully fetched user's YouTube channel!");
         }
         else {
-          console.log("Error with retrieving user's YouTube channl");
+          console.error("Error with retrieving user's YouTube channel");
         }
         return response.json();
-      }).catch((error) => console.log(error));
+      }).catch((error) => console.error(error));
     
     return profileResponse;
 };
@@ -99,10 +99,10 @@ const getUserPlaylists = async (token) => {
       console.log("Successfully fetched user's list of YouTube playlists!");
     }
     else {
-      console.log("Error with retrieving user's list of YouTube playlists")
+      console.error("Error with retrieving user's list of YouTube playlists")
     }
     return response.json();
-  }).catch((error) => console.log(error));
+  }).catch((error) => console.error(error));
 
   return playlistResponse;
 };
@@ -140,7 +140,7 @@ export const getUserAccount = async(token) => {
 
     });
   });
-  
+  console.log(userAccount);
   return userAccount;
 };
 
@@ -159,10 +159,10 @@ const fetchPlaylist = async (playlistID) => {
           console.log("Successfully fetched YouTube playlist!");
       }
       else {
-          console.log("Error with retrieving YouTube playlist");
+          console.error("Error with retrieving YouTube playlist");
       }
       return response.json();
-  }).catch((error) => console.log(error));
+  }).catch((error) => console.error(error));
 
   return playlist.items[0];
 };
@@ -181,10 +181,10 @@ const fetchTracks = async (playlistID, offset, limit=50) => {
       console.log("Successfully got the next batch of tracks!");
     }
     else {
-      console.log("Error with getting the next batch of tracks...");
+      console.error("Error with getting the next batch of tracks...");
     }
     return response.json();
-  }).catch(error => console.log(error));
+  }).catch(error => console.error(error));
 
   return tracks;
 };
@@ -251,10 +251,10 @@ const getSongDurations = async (songIDs) => {
           console.log("Successfully got video information!");
         }
         else {
-          console.log("Error with getting video information...");
+          console.error("Error with getting video information...");
         }
         return response.json();
-      }).catch(error => console.log(error));
+      }).catch(error => console.error(error));
 
     return videos;
 }
@@ -305,10 +305,32 @@ export const extractSongInfo = async (playlist) => {
     return playlist;
 };
 
-/// Create the playlist on YouTube Music
-/// YouTube API:
+/// Create the playlist on YouTube
+/// YouTube API: https://developers.google.com/youtube/v3/docs/playlists/insert
 const createPlaylist = (token, userID, playlistName) => {
-  
+  let newPlaylist = fetch(`https://youtube.googleapis.com/youtube/v3/playlists?part=snippet&key=${apiKey}`, {
+    method: "POST",
+    headers: {
+        Authorization: "Bearer " + token,
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        "snippet": {
+            "title": playlistName,
+            "description": "Playlist copied by playlist-transfer"
+        }
+    })
+  }).then(response => {
+    if(response.ok){
+      console.log("Successfully created the playlist on YouTube!");
+    }
+    else {
+      console.error("Error with creating playlist on YouTube");
+    }
+    return response.json();
+  }).catch(error => console.error(error));
+
+  return newPlaylist;
 };
 
 /// Search the track on Spotify by its ISRC and retrieve its URI, which will be used to add the track to the playlist
@@ -327,88 +349,86 @@ const searchTrackByISRC = async (token, songISRC) => {
       console.log("Successfully searched track on Spotify!");
     }
     else {
-      console.log("Error with searching on Spotify");
+      console.error("Error with searching on Spotify");
     }
     return response.json();
-  }).catch(error => console.log(error));
+  }).catch(error => console.error(error));
 
   return results;
 }
 
-/// Search the track on Spotify by its name and its artist's name(s), and retrieve its URI, which will be used to add the track to the playlist
-/// Spotify API: https://developer.spotify.com/documentation/web-api/reference/search
+/// Search the track on YouTube by its name and its artist's name(s), and retrieve its URI, which will be used to add the track to the playlist
+/// YouTube API: https://developers.google.com/youtube/v3/docs/search/list
 const searchTrackByName = async(token, song) => {
 
-  // let queryToEncode = `remaster%20track:"${sharedService.extractSongName(song.name)}"%20artist:"${song.artists}"%20album:"${song.album}"`;
   let queryToEncode = `${sharedService.extractSongName(song.name)} - ${song.artists}`;
   let encodedQuery = encodeURIComponent(queryToEncode);
-  let results = fetch(`https://api.spotify.com/v1/search?q=${encodedQuery}&type=track&limit=50`, {
+  let results = fetch(`https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&q=${encodedQuery}&type=video&key=${apiKey}`, {
     method: "GET",
     headers: {
-      Authorization: "Bearer " + token.access_token
+      Authorization: "Bearer " + token,
+      "Content-Type": "application/json"
     }
   }).then(response => {
     if(response.ok) {
-      console.log("Successfully searched track on Spotify!");
+      console.log("Successfully searched track on YouTube!");
     }
     else {
-      console.log("Error with searching on Spotify");
+      console.error("Error with searching on YouTube");
     }
     return response.json();
-  }).catch(error => console.log(error));
+  }).catch(error => console.error(error));
 
   return results;
 };
 
 /// Helper function that makes sure that the exact song is found
 const findTrack = (results, song) => {
-  let trackURI = "";       // The track that will be put into the playlist
-  let searchResults = [...results.items];
-let firstResults = searchResults.map((song) => {
-  return {
-    name: song.name,
-    album: song.album.name,
-    artists: song.artists.map((artistObject) => artistObject.name),
-    isExplicit: song.explicit
-  }
-});
+//   let trackID = "";       // The track that will be put into the playlist
+//   let searchResults = [...results.items];
 
-  for(let i=0; i<searchResults.length; i++) {   // Use a for loop instead of a forEach so that we can 'break' out once we've found the right track
-    // ORRRR I can check the song.isrc
-    if(searchResults[i].name === song.name && searchResults[i].album.name === song.album  
-        && searchResults[i].explicit === song.isExplicit) {   // Check for the right version (i.e., the search result is from the same album and has the same Explicit rating)
-      trackURI = searchResults[i].uri;
-      break;
-    }
-  };
+//   for(let i=0; i<searchResults.length; i++) {  
+//     if(searchResults[i].snippet.title === song.name && searchResults[i].album.name === song.album) {   // Check for the right version (i.e., the search result is from the same album and has the same Explicit rating)
+//       trackID = searchResults[i].uri;
+//       break;
+//     }
+//   };
+  let trackID = results.items[0].id.videoId;    // Take the first search result in the list
 
-  return {songName: song.name, spotifyURI: trackURI};
+  return {songName: song.name, trackID: trackID};
 };
 
 
-/// Add the tracks to the Spotify playlist
-/// Spotify API: https://developer.spotify.com/documentation/web-api/reference/add-tracks-to-playlist
-const addTracksToPlaylist = (token, tracksURIArray, playlistID) => {
-
-  let addTracksResponse = fetch(`https://api.spotify.com/v1/playlists/${playlistID}/tracks`, {
+/// SUMMARY: Add the track to the YouTube playlist
+/// DETAILS: YouTube API only allows addition of one video per API call, unlike Spotify API which supports adding multiple tracks in one API call
+/// YouTube API: https://developers.google.com/youtube/v3/docs/playlistItems/insert
+const addTracksToPlaylist = (token, trackID, playlistID, position) => {
+console.log(trackID);
+  let addTracksResponse = fetch(`https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&key=${apiKey}`, {
     method: "POST",
     headers: {
-      Authorization: "Bearer " + token.access_token,
+      Authorization: "Bearer " + token,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      "uris": tracksURIArray,
-      "position": 0
+        "snippet":{
+            "playlistId": playlistID,
+            "position": position,
+            "resourceId":{
+                "kind": "youtube#video",
+                "videoId": trackID
+            }
+        }
     })
   }).then(response => {
     if(response.ok) {
-      console.log("Successfully transferred tracks to Spotify playlist!");
+      console.log("Successfully transferred tracks to YouTube playlist!");
     }
     else {
-      console.log("Error with adding tracks to Spotify playlist...");
+      console.error("Error with adding tracks to YouTube playlist...");
     }
     return response.json();
-  }).catch(error => console.log(error));
+  }).catch(error => console.error(error));
 
   return addTracksResponse;
 };
@@ -417,26 +437,27 @@ const addTracksToPlaylist = (token, tracksURIArray, playlistID) => {
 export const transferPlaylist = async (token, userID, playlist) => {
   let newPlaylistID = "";   // The ID of the new playlist, which is necessary for adding tracks to it
   let newPlaylistName = playlist.playlistName + " - copy";  // The name that will be used for the newly-created playlist
-  let tracksURIArray = [];
-  let missingTracks = [];     // List of songs that could not be found reliably on Spotify
+  let tracksIDArray = [];
+  let missingTracks = [];     // List of songs that could not be found reliably on YouTube
 
   // Step 1: Find and retrieve the Spotify URI's for all the tracks that will be put into the transferred playlist
   await playlist.tracks.forEach(song => {
-    if(song.isrc === "") {
-      missingTracks.push(song);
-      return;
-    }
-    try{
-      searchTrackByISRC(token, song.isrc)
-      .then((searchResults => {
-        let trackURI = searchResults.tracks.items[0].uri;
-        tracksURIArray.push(trackURI);
-      }));
-    }
-    catch(error){
-      missingTracks.push(song.songName);
-    }
-    
+    searchTrackByName(token, song)
+    .then(searchResults => {
+        let result = findTrack(searchResults, song);
+        console.log(result);
+        return result;
+    })
+    .then(result => {
+        if(result.trackID !== ""){
+            tracksIDArray.push(result.trackID);
+            console.log(`Added ${song.name} to tracksIDArray`);
+        }
+        else {
+            missingTracks.push(result.name);
+            console.log(`Added ${song.name} to missingTracks`);
+        }
+    });
   });
 
   // Step 2: Create the playlist in the Spotify account and retrieve its Spotify ID
@@ -447,31 +468,13 @@ export const transferPlaylist = async (token, userID, playlist) => {
 
 
   // Step 3: Add all of the tracks to the newly-created Spotify playlist
-  // You can add a maximum of 100 songs at once
-  if(playlist.tracks.length <= 100) {
-    addTracksToPlaylist(token, tracksURIArray, newPlaylistID)
+  for(let i=0; i<tracksIDArray.length; i++){
+    addTracksToPlaylist(token, tracksIDArray[i], newPlaylistID, i)
     .then(response => {
-      console.log(response);
-      return response;
+        console.log(response);
+        return response;
     });
-  }
-  else {
-    let numTracksAdded = 0;
-    while(tracksURIArray.length - numTracksAdded > 100) {
-      await addTracksToPlaylist(token, tracksURIArray.slice(numTracksAdded, numTracksAdded+100), newPlaylistID)
-      .then(response => {
-        console.log(response);
-        return response;
-      });
-      numTracksAdded += 100;
-    }
+   }
 
-    addTracksToPlaylist(token, tracksURIArray.slice(numTracksAdded), newPlaylistID)
-      .then(response => {
-        console.log(response);
-        return response;
-      });
-  }
-  
   return missingTracks;
 };

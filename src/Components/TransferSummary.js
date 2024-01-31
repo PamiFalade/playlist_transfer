@@ -17,7 +17,7 @@ const TransferSummary = (playlist) => {
     return(
         <Card className="mainCard">
             <Card.Title>Transfer Complete!</Card.Title>
-            <Card.Subtitle>{missingSongs.length === 0 ? `All songs were transferred successfully!` : `The following songs were not transferred...`}</Card.Subtitle>
+            <Card.Subtitle>{missingSongs?.length === 0 ? `All songs were transferred successfully!` : `The following songs were not transferred...`}</Card.Subtitle>
             
            { missingSongs.length > 0 && 
             <Card.Body>

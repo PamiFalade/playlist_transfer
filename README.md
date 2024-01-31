@@ -4,6 +4,11 @@
 * Different types of loops have different levels of performance
 ** forEach loops are 6 times slower than do-while loops, and 4 times slower than for loops and while loops
 * Working with API's, asynchronous functions
+** I often ran into the error of data that was being returned from a function being "undefined", so it would break the code. 
+*** I often solved this by making the functions async methods, but this can sometimes be solved by just making the function a callback function. (https://blog.learnhub.africa/2023/07/24/what-is-asynchronous-javascript/) 
+*** It is probably better to use a callback function instead of async functions for simple asynchronous tasks/events, where there's no chance of failure and error messages in the way that API's can return. E.g., use a callback for the extractSongInfo() methods, instead of making them async functions.
+*** Callback functions are also suitable for dealing with legacy code or specific Node.js APIs that require callbacks.
+*** Promises are definitely better for managing multiple asynchronous operations thanks to their chainable syntax; this helps us avoid "callback hell" (this refers to how error handling in callbacks can be complex, which leads to nested callbacks).
 ** Using the await keyword does not work in a forEach loop. It needs to be at the "top level." You can use it in a for loop though.
 ** If you are getting a value that is returned from an asynchronous function, it will be received as a Promise. To unravel the Promise so you get the actual data you need, you need to put the 'await' keyword before the function call. 
 * Arrow functions vs normal functions (https://www.youtube.com/watch?v=5iGGvJn8K1U&ab_channel=WebDevSimplified)
