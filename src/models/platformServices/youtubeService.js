@@ -10,14 +10,14 @@ const state_parameter_passthrough_value = "accessGranted";
 const youtube_authorize_endpoint = "https://accounts.google.com/o/oauth2/v2/auth";
 const redirect_uri = "http://localhost:3000/destination-select";
 
-/// Scopes are already defined on Google Cloud
-/// https://console.cloud.google.com/apis/credentials/oauthclient?previousPage=%2Fapis%2Fcredentials%3Fproject%3Dplaylist-transfer-411715%26supportedpurview%3Dproject&project=playlist-transfer-411715&supportedpurview=project
+/// SUMMARY: Scopes are already defined on Google Cloud
+/// Google Cloud Configurations: https://console.cloud.google.com/apis/credentials/oauthclient?previousPage=%2Fapis%2Fcredentials%3Fproject%3Dplaylist-transfer-411715%26supportedpurview%3Dproject&project=playlist-transfer-411715&supportedpurview=project
 const SCOPES = [
   "https://www.googleapis.com/auth/youtube",
   "https://www.googleapis.com/auth/youtube.readonly"
 ];
 
-/// Used to extract the playlist ID from the Spotify share link using Regex
+/// SUMMARY: Used to extract the playlist ID from the Spotify share link using Regex.
 export const extractPlaylistID = (link) => {
     const regex = new RegExp(regexPattern);
     const playlistID = link.match(regex)[0];
@@ -25,13 +25,13 @@ export const extractPlaylistID = (link) => {
     return playlistID;
 };
 
-/// Gets the app's YouTube token using the YouTube API
+/// SUMMARY: Gets the app's YouTube token using the YouTube API.
 /// YouTube API: https://developer.spotify.com/documentation/web-api/tutorials/client-credentials-flow
 export const fetchToken = () => {
 
 };
 
-/// Redirect to the YouTube API's user login and authorization page
+/// SUMMARY: Redirect to the YouTube API's user login and authorization page.
 /// YouTube API: https://developers.google.com/youtube/v3/guides/auth/client-side-web-apps
 export const redirectToUserAuthorization = () => {
   let authorizeURL = youtube_authorize_endpoint + "?scope=" + SCOPES.join(" ");
@@ -44,7 +44,7 @@ export const redirectToUserAuthorization = () => {
   window.location.href = authorizeURL; // Show YouTube's authorization screen.
 };
   
-// Helper function for parsing code from the return URL after getting authorization from the user
+/// SUMMARY: Helper function for parsing the access token from the return URL after getting authorization from the user.
 const getCode = () => {
   const queryString = window.location.hash;
   let code = "";
@@ -56,14 +56,14 @@ const getCode = () => {
   return code;
 };
 
-/// Retrieve token that is returned when user logs in and authorizes the app
+/// SUMMARY: Retrieve token that is returned when user logs in and authorizes the app.
 export const getUserAuthorizationToken = () => {
   let access_token = getCode(); //Get the code from the return of the login
   
   return access_token;
 };
 
-/// SUMMARY: Fetch the user's account name and profile picture
+/// SUMMARY: Fetch the user's account name and profile picture.
 /// YouTube API: https://developers.google.com/youtube/v3/docs/channels/list
 const getUserProfile = async (token) => {
     let profileResponse = fetch(`https://youtube.googleapis.com/youtube/v3/channels?part=snippet%2CcontentDetails%2Cstatistics&mine=true&key=${apiKey}`, {
@@ -85,7 +85,7 @@ const getUserProfile = async (token) => {
     return profileResponse;
 };
 
-/// SUMMARY: Fetch the user's list of playlists
+/// SUMMARY: Fetch the user's list of playlists.
 /// YouTube API: https://developers.google.com/youtube/v3/docs/playlists/list
 const getUserPlaylists = async (token) => {
   let playlistResponse = fetch(`https://youtube.googleapis.com/youtube/v3/playlists?part=snippet%2CcontentDetails&maxResults=25&mine=true&key=${apiKey}`, {
@@ -107,7 +107,7 @@ const getUserPlaylists = async (token) => {
   return playlistResponse;
 };
 
-/// Gets the necessary details from the user's account, to display on the DestinationSelect page
+/// SUMMARY: Gets the necessary details from the user's account, to display on the DestinationSelect page.
 export const getUserAccount = async(token) => {
   let userAuthToken = token;
   let userAccount = {
@@ -117,14 +117,12 @@ export const getUserAccount = async(token) => {
     playlists: []
   };
 
-  // Get the user's username and profile image
   await getUserProfile(userAuthToken).then((profileResponse) => {
     userAccount.username = profileResponse.items[0].snippet.title;
     userAccount.userID = profileResponse.items[0].id;
     userAccount.profileImg = profileResponse.items[0].snippet.thumbnails.high.url;
   });
 
-  // Get the list of playlists saved in the user's account, then extract only necessary info for each playlist and add them to the userAccouunt object that will be returned
   await getUserPlaylists(userAuthToken).then((playlistResponse) => {
 
     playlistResponse.items.forEach(playlist => {
@@ -144,7 +142,7 @@ export const getUserAccount = async(token) => {
   return userAccount;
 };
 
-/// SUMMARY: Fetch the playlist information
+/// SUMMARY: Fetch the playlist information.
 /// DETAILS: This YouTube API endpoint only returns details of the playlist, including its name, the number of tracks, etc.
 /// YouTube API: https://developers.google.com/youtube/v3/docs/playlists/list
 const fetchPlaylist = async (playlistID) => {
@@ -167,7 +165,7 @@ const fetchPlaylist = async (playlistID) => {
   return playlist.items[0];
 };
 
-/// SUMMARY: Fetch a playlist's tracks
+/// SUMMARY: Fetch a playlist's tracks.
 /// YouTube API: https://developers.google.com/youtube/v3/docs/playlistItems/list
 const fetchTracks = async (playlistID, offset, limit=50) => {
   let tracks = fetch(`https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet%2CcontentDetails%2Cid%2Cstatus&maxResults=50&playlistId=${playlistID}&key=${apiKey}`, 
@@ -189,8 +187,8 @@ const fetchTracks = async (playlistID, offset, limit=50) => {
   return tracks;
 };
 
-/// SUMMARY: Fetch the requested playlist with the playlist's ID
-/// DETAILS: 
+/// SUMMARY: Fetch the requested playlist with the playlist's ID.
+/// DETAILS: Makes use of the fetchPlaylist() and fetchTracks() methods.
 export const fetchPlaylistAndTracks = async (playlistID) => {
 
   let playlist, numTracksFetched, totalNumTracks;
@@ -205,7 +203,7 @@ export const fetchPlaylistAndTracks = async (playlistID) => {
 
   // If the playlist has more tracks than the YouTube API call's limit, get the rest of them
   let nextBatch;    // The variable that will hold the next set of tracks that are fetched
-  while(numTracksFetched < totalNumTracks) {                // While not all the tracks have been fetched, keep calling fetchExtraTracks()
+  while(numTracksFetched < totalNumTracks) {            // While not all the tracks have been fetched, keep calling fetchExtraTracks()
     nextBatch = await fetchTracks(playlistID, numTracksFetched, extraTracksLimit);
     numTracksFetched += extraTracksLimit;
     extraTracks.push(...nextBatch.items);
@@ -222,20 +220,14 @@ export const fetchPlaylistAndTracks = async (playlistID) => {
   return fullPlaylist;
 };
 
-// Helper function to get the names of the artists on a song and put them in a comma-separated string
+/// SUMMARY: Helper function to get the names of the artists on a song and put them in a comma-separated string.
+/// DETAILS: YouTube API does not have a field specifically for naming the artists. It may be possible to extract the artists' names from the title and/or description of the video, but this is not implemented yet.
 const extractSongArtists = (song) => {
-  let artistList = song.track.artists[0].name;
-  let index = 1;
-  while(index < song.track.artists.length) {
-      artistList += ", " + song.track.artists[index].name;
-      index++;
-  }
-
-  return artistList;
+  return "Not implemented yet...";
 };
 
 /// SUMMARY: Helper function that searches up the videos of each song specified by the songIDs.
-/// DETAILS: This function is used to ultimately gain the durations of each song.
+/// DETAILS: This function is used to ultimately gain the durations of each song. Utilized by the extractSongInfo() method.
 /// YouTube API: https://developers.google.com/youtube/v3/docs/videos/list
 const getSongDurations = async (songIDs) => {
 
@@ -260,6 +252,7 @@ const getSongDurations = async (songIDs) => {
 }
 
 /// SUMMARY: Extracts the song's title, image, artist(s), and length, from the tracklist that comes in the Spotify playlist object.
+/// DETAILS: Makes use of getSongDurations() to get the duration of each track, which is used to calculate the total duration of the playlist
 export const extractSongInfo = async (playlist) => {
     let formattedSongArray = [];
     let videoIDs = [];      // Will be a comma-separated list of the video IDs, which will be used to find the duration of each YouTube video
@@ -305,7 +298,7 @@ export const extractSongInfo = async (playlist) => {
     return playlist;
 };
 
-/// Create the playlist on YouTube
+/// SUMMARY: Create the playlist on YouTube.
 /// YouTube API: https://developers.google.com/youtube/v3/docs/playlists/insert
 const createPlaylist = (token, userID, playlistName) => {
   let newPlaylist = fetch(`https://youtube.googleapis.com/youtube/v3/playlists?part=snippet&key=${apiKey}`, {
@@ -333,31 +326,13 @@ const createPlaylist = (token, userID, playlistName) => {
   return newPlaylist;
 };
 
-/// Search the track on Spotify by its ISRC and retrieve its URI, which will be used to add the track to the playlist
-/// Spotify API: https://developer.spotify.com/documentation/web-api/reference/search
+/// SUMMARY: Search the track by its ISRC and retrieve its URI, which will be used to add the track to the playlist.
+/// DETAILS: There is no way to search YouTube for a track by its ISRC at the moment, so this function is not implemented
 const searchTrackByISRC = async (token, songISRC) => {
-  
-  let queryToEncode = `isrc:${songISRC}`;
-  let encodedQuery = encodeURIComponent(queryToEncode);
-  let results = fetch(`https://api.spotify.com/v1/search?q=${encodedQuery}&type=track&limit=50`, {
-    method: "GET",
-    headers: {
-      Authorization: "Bearer " + token.access_token
-    }
-  }).then(response => {
-    if(response.ok) {
-      console.log("Successfully searched track on Spotify!");
-    }
-    else {
-      console.error("Error with searching on Spotify");
-    }
-    return response.json();
-  }).catch(error => console.error(error));
-
-  return results;
+    return "Not implemented yet...";
 }
 
-/// Search the track on YouTube by its name and its artist's name(s), and retrieve its URI, which will be used to add the track to the playlist
+/// SUMMARY: Search the track on YouTube by its name and its artist's name(s), and retrieve its URI, which will be used to add the track to the playlist.
 /// YouTube API: https://developers.google.com/youtube/v3/docs/search/list
 const searchTrackByName = async(token, song) => {
 
@@ -382,25 +357,18 @@ const searchTrackByName = async(token, song) => {
   return results;
 };
 
-/// Helper function that makes sure that the exact song is found
+/// SUMMARY: Helper function that makes sure that the exact song is found.
+/// DETAILS: Currently just takes the first result from the search. May be optmized later
 const findTrack = (results, song) => {
-//   let trackID = "";       // The track that will be put into the playlist
-//   let searchResults = [...results.items];
 
-//   for(let i=0; i<searchResults.length; i++) {  
-//     if(searchResults[i].snippet.title === song.name && searchResults[i].album.name === song.album) {   // Check for the right version (i.e., the search result is from the same album and has the same Explicit rating)
-//       trackID = searchResults[i].uri;
-//       break;
-//     }
-//   };
   let trackID = results.items[0].id.videoId;    // Take the first search result in the list
 
   return {songName: song.name, trackID: trackID};
 };
 
 
-/// SUMMARY: Add the track to the YouTube playlist
-/// DETAILS: YouTube API only allows addition of one video per API call, unlike Spotify API which supports adding multiple tracks in one API call
+/// SUMMARY: Add the track to the YouTube playlist.
+/// DETAILS: YouTube API only allows addition of one video per API call, unlike Spotify API which supports adding multiple tracks in one API call.
 /// YouTube API: https://developers.google.com/youtube/v3/docs/playlistItems/insert
 const addTracksToPlaylist = (token, trackID, playlistID, position) => {
 console.log(trackID);
@@ -433,7 +401,8 @@ console.log(trackID);
   return addTracksResponse;
 };
 
-/// Execute the copying of the playlist to the specified Spotify account
+/// SUMMARY: Execute the copying of the playlist to the specified YouTube account.
+/// DETAILS: Makes use of the searchTrackByName(), createPlaylist(), and addTrackstToPlaylist() methods.
 export const transferPlaylist = async (token, userID, playlist) => {
   let newPlaylistID = "";   // The ID of the new playlist, which is necessary for adding tracks to it
   let newPlaylistName = playlist.playlistName + " - copy";  // The name that will be used for the newly-created playlist
