@@ -381,7 +381,7 @@ console.log(trackID);
     body: JSON.stringify({
         "snippet":{
             "playlistId": playlistID,
-            "position": position,
+            "position": 0,
             "resourceId":{
                 "kind": "youtube#video",
                 "videoId": trackID
@@ -437,13 +437,20 @@ export const transferPlaylist = async (token, userID, playlist) => {
 
 
   // Step 3: Add all of the tracks to the newly-created Spotify playlist
-  for(let i=0; i<tracksIDArray.length; i++){
-    addTracksToPlaylist(token, tracksIDArray[i], newPlaylistID, i)
-    .then(response => {
-        console.log(response);
-        return response;
-    });
-   }
+  let i = 0;    // Used to select the track that will be added to the playlist
+  let intervalID = /*await*/ setInterval(() => {      // Requests to this YouTube API endpoint need to be spaced out to work effectively
+                        addTracksToPlaylist(token, tracksIDArray[i], newPlaylistID, i)
+                        .then(response => {
+                            console.log(response);
+                            return response;
+                        });
+                        if(tracksIDArray.length - i < 2) {
+                            clearInterval(intervalID);
+                        }
+                        else {
+                            i++;
+                        }
+                    }, 200);
 
   return missingTracks;
 };
