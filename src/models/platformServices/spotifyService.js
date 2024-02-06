@@ -271,7 +271,7 @@ export const fetchPlaylistAndTracks = async (token, playlistID) => {
     username: playlist.owner.display_name,
     id: playlistID,
     tracks: [...playlist.tracks.items, ...extraTracks],
-    image: playlist.images[0].url
+    image: playlist.images[1].url
   };
 
   return fullPlaylist;

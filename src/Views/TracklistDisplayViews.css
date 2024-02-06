@@ -1,24 +1,45 @@
 .tracklistDisplay {
     max-height: 35vh;
-    width: 100%;
+    width: 27vw;
     display: flex;
     flex-direction: column;
-    background-color: green;
-    border: solid 1px black;
+    background-color: var(--tertiary-bg-color);
+    border: solid 1px var(--secondary-fg-color);
     overflow-y: scroll;
+}
+
+li {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 2vh;
+    padding-bottom: 2%;
 }
 
 .songDisplay {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    border: 1px solid black;
+    border: 0.3px solid linear-gradient(var(--tertiary-bg-color) 30%, black 100%);
     height: 10vh;
     width: 100%;
+    padding-left: 1%;
 }
 
 .songImg {
     height: 9vh;
     margin-top: 0.5vh;
     margin-right: 1.5vw;
+}
+
+.songInfo {
+    height: 90%;
+    margin-top: 2.5%;
+}
+
+.line {
+    width: 70%;
+    height: 0.5px;
+    background-color: var(--secondary-fg-color);
+    margin-left: 25%;
+    margin-top: 2%;
 }

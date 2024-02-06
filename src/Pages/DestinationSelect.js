@@ -95,48 +95,49 @@ const DestinationSelect = () => {
     }, [window.location]);
 
     return (
-        <div className="mainSection mainSectionGreen">
+        <main>
+            <div className="mainSection">
 
-            {/* Shows the platform selector, where the user chooses which platform they want to login to */}
-            {!loggedIn && (
-                <div>
-                    <h1>Login to Destination Account</h1>
-                    <PlatformSelector />
-                </div>)}
+                {/* Shows the platform selector, where the user chooses which platform they want to login to */}
+                {!loggedIn && (
+                    <div>
+                        <PlatformSelector title="Login to Destination Account"/>
+                    </div>)}
 
+                
+                {/* Shows the playlists in a user's account */}
+                {loggedIn && (
+                    <div id="userAccountDisplay">
+                        <div id="accountInfo">
+                            <img className="profilePic" src={userAccount.profileImg} />
+                            <h2>{userAccount.username}</h2>
+                        </div>
+                        <div id="userPlaylistsDisplay">
+                            {userAccount.playlists.map((playlist, index) => {
+                                index++;
+                                return <div className="playlistCard" key={index} >
+                                    <img src={playlist.image} />
+                                    <p>{playlist.playlistName}</p>
+                                    <small>{playlist.playlistOwner}</small>
+                                </div>
+                            })}
+                        </div>
+                        <div className="confirmButtons">
+                            <Button variant="secondary" id="backButton" onClick={handleLoggedIn}>
+                                Go Back
+                            </Button>
+
+                            <Button variant="primary" id="transferButton" onClick={beginTransferPlaylist}>
+                                Transfer Playlist
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
+                { showSummary && <TransferSummary playlist={missingTracks}/>}
             
-            {/* Shows the playlists in a user's account */}
-            {loggedIn && (
-                <div id="userAccountDisplay">
-                    <div id="accountInfo">
-                        <img className="profilePic" src={userAccount.profileImg} />
-                        <h2>{userAccount.username}</h2>
-                    </div>
-                    <div id="userPlaylistsDisplay">
-                        {userAccount.playlists.map((playlist, index) => {
-                            index++;
-                            return <div className="playlistCard" key={index} >
-                                <img src={playlist.image} />
-                                <p>{playlist.playlistName}</p>
-                                <small>{playlist.playlistOwner}</small>
-                            </div>
-                        })}
-                    </div>
-                    <div className="confirmButtons">
-                        <Button variant="secondary" id="backButton" onClick={handleLoggedIn}>
-                            Go Back
-                        </Button>
-
-                        <Button variant="primary" id="transferButton" onClick={beginTransferPlaylist}>
-                            Transfer Playlist
-                        </Button>
-                    </div>
-                </div>
-            )}
-
-            { showSummary && <TransferSummary playlist={missingTracks}/>}
-           
-        </div>
+            </div>
+        </main>
     );
 }
 

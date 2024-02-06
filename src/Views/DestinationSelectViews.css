@@ -1,18 +1,12 @@
-main {
-    background-color: brown;
-    position: relative;
-}
-
 #userAccountDisplay {
-    width: 90%;
-    height: 90%;
+    width: 70vw;
+    height: 70vh;
     border: solid 1.5px black;
     border-radius: 2.5%;
-    background-color: aliceblue;
-    position: absolute;
-    left: 5%;
+    background-color: var(--secondary-bg-color);
     display: flex;
     flex-direction: column;
+    margin-top: 10vh;
 }
 
 #accountInfo {
@@ -50,8 +44,6 @@ main {
 }
 
 .confirmButtons {
-    position: absolute;
-    bottom: 5%;
     width: 100%;
     display: grid;
     grid-template-columns: 35% 10% auto 10% 35%;

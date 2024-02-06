@@ -4,8 +4,10 @@ import "../Views/PlatformSelectorViews.css";
 import { redirectToUserAuthorization } from "../models/webService";
 
 
-const PlatformSelector = () => {
+const PlatformSelector = (props) => {
 
+    // Title that will be at the top of the card
+    const title = props.title;
 
     const handleLogin = (id) => {
         console.log(id);
@@ -29,6 +31,9 @@ const PlatformSelector = () => {
 
     return(
         <Card id="platformCard">
+            <Card.Title>
+                <h2>{title}</h2>
+            </Card.Title>
             <Card.Body>
             <div id="platformGrid">
                 <div className="logoContainer" id="spotifyButton" onClick={() => {handleLogin("spotifyButton")}}>

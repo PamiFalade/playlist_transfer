@@ -16,13 +16,16 @@ import {
 const Landing = () => {
 
   return (
-    <div className="mainSection mainSectionBlue">
-      <h1>Find your playlist...</h1>
-      
-      {/* IDEA: Change the theme of the app based on the share link (i.e., once the link is entered into the input field, check its source. Then change the theme of the app accordingly) */}
-      <LinkInput />
-      
-    </div>
+    <main>
+      <div className="mainSection">
+        <h1>Find your playlist...</h1>
+        
+        {/* IDEA: Change the theme of the app based on the share link (i.e., once the link is entered into the input field, check its source. Then change the theme of the app accordingly) */}
+        <LinkInput />
+        
+      </div>
+    </main>
+    
   );
 };
 

@@ -153,46 +153,50 @@ const PlaylistDetails = () => {
       
 
     return(
-        <div id="playlistSummary">
-            
-            {/* Loading symbol */}
-            { loading && 
-                <div className="loadingSymbol">
-                    <h2>Fetching Playlist...</h2>
-                    <ScaleLoader 
-                        color="antiquewhite"
-                        loading={loading}
-                        size={150}
-                        aria-label="Loading Spinner"
-                        data-testid="loader"/>
+        <main>
+            <div className="mainSection">
+                <div id="playlistSummary">
+                    
+                    {/* Loading symbol */}
+                    { loading && 
+                        <div className="loadingSymbol">
+                            <h2>Fetching Playlist...</h2>
+                            <ScaleLoader 
+                                color="var(--primary-fg-color)"
+                                loading={loading}
+                                size={150}
+                                aria-label="Loading Spinner"
+                                data-testid="loader"/>
+                        </div>
+                    }
+
+                    {/* SoundCloud Widget API */}
+                    { foundPlaylist === false && sourcePlatform === "soundcloud" &&
+                        <iframe ref={iframeRef} className="sc-widget" id="SCwidget" width="0px" height="500%" allow="autoplay" style={{position:"absolute", left:"0", top:"0", fontSize:"40"}}
+                                src={`https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/${playlistID}/&color=%23ff5500&auto_play=false&hide_related=false&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false`} /> 
+                }
+
+
+                { foundPlaylist === true &&
+                    <div>
+                        <img id="playlistImage" src={playlist.image}/>
+                        <h2>{playlist.playlistName}</h2>
+                        <div id="playlistInfo">
+                            <p>{playlist.tracks.length} songs | {playlist.length}</p>
+                        </div>
+                        <TracklistDisplay playlist={playlist.tracks}/>
+                        <button className="btn btn-secondary" type="button" onClick={navigateBack}>
+                            Back
+                        </button>
+
+                        <button className="btn btn-primary confirmButton" type="button" onClick={openDestinationSelect}>
+                            This is it!
+                        </button>
+                    </div> }
+
                 </div>
-            }
-
-            {/* SoundCloud Widget API */}
-            { foundPlaylist === false && sourcePlatform === "soundcloud" &&
-                <iframe ref={iframeRef} className="sc-widget" id="SCwidget" width="0px" height="500%" allow="autoplay" style={{position:"absolute", left:"0", top:"0", fontSize:"40"}}
-                        src={`https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/${playlistID}/&color=%23ff5500&auto_play=false&hide_related=false&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false`} /> 
-           }
-
-
-           { foundPlaylist === true &&
-            <div>
-                <img id="playlistImage" src={playlist.image}/>
-                <h2>{playlist.playlistName}</h2>
-                <div id="playlistInfo">
-                    <p>{playlist.tracks.length} songs | {playlist.length}</p>
-                </div>
-                <TracklistDisplay playlist={playlist.tracks}/>
-                <button className="btn btn-secondary" type="button" onClick={navigateBack}>
-                    Back
-                </button>
-
-                <button className="btn btn-primary confirmButton" type="button" onClick={openDestinationSelect}>
-                    This is it!
-                </button>
-            </div> }
-
-        </div>
+            </div>
+        </main>
     );
 };
 

@@ -1,18 +1,58 @@
+
+/* Variables that will be the same no matter the theme */
+:root {
+  --action-color-spotify: #1cd760;
+  --action-color-soundcloud: orange;
+  --action-color-youtube: red;
+  --action-color-apple: linear-gradient(90deg, rgba(102,58,255,255) 0%, rgba(255,0,79,255) 50%, rgba(0,158,255,255) 100%);
+}
+
+/* Variables for light color theme */
+:root[data-theme="light"] {
+  --primary-bg-color: white;
+  --secondary-bg-color: #dee4e7;
+  --tertiary-bg-color: #adb3bc;
+
+  --primary-fg-color: black;
+  --secondary-fg-color: #464033;
+
+  --action-color-neutral: darkgrey;
+}
+
+/* Variables for dark color theme */
+:root[data-theme="dark"] {
+  --primary-bg-color: #212121;
+  --secondary-bg-color: #0F0F0F;
+  --tertiary-bg-color: ;
+  
+  --primary-fg-color: white;
+  --secondary-fg-color: #bbc4c2;
+
+  --action-color-neutral: white;
+}
+
+
 html {
   width: 100vw;
-  height: 105vh;
+  height: 100vh;
   padding: 0;
-  margin: 0;
+  background-color: var(--primary-bg-color);
 }
 
 body {
-  padding: 0;
-  margin-top: -2vh;
+  padding: 0vh 5vw;
+  background-color: var(--primary-bg-color);
+
 }
 
-button {
-  margin: 2vh 0 0vh;
+.mainSection {
+  width: 90vw;
+  height: 100vh;
+  padding-top: 3vh;
+  display: grid;
+  justify-items: center;
 }
+
 
 h1, h2, p {
   font-family: "Visby Round";
@@ -21,44 +61,53 @@ h1, h2, p {
 
 h1, h2 {
   text-align: center;
-  margin: 1vh 0 3vh;
-  color: antiquewhite;
+  color: var(--primary-fg-color);
 }
 
 h1 {
   font-size: 48px;
+  margin-top: 2vh;
 }
 
-.mainSection {
-  width: 100vw;
-  height: 102vh;
-  margin: 0%;
-  padding: 5vw 0 5vw;
+h5, p {
+  color: var(--secondary-fg-color);
 }
 
-.mainSectionBlue {
-  background-color: #4258f4;
-}
-
-.mainSectionGreen {
-  background-color: #38858a;
-}
-
-.mainSectionRed {
-  background-color: #ba4949;
-  
-}
+/* Special card with "colored outline on hover" effect */
+.backCard {
+  margin-bottom: 20vh;
+  width: 35vw;
+  height: 40vh;
+  background-color: var(--secondary-bg-color);
+  border-radius: 20px;
+  transition: all .3s;  
+ }
+ 
+ .frontCard {
+  margin-bottom: 20vh;
+  width: 35vw;
+  height: 40vh;
+  background-color: var(--secondary-bg-color);
+  transition: all .2s;
+  padding: 3%;
+ }
+ 
+ .frontCard:hover {
+  transform: scale(0.98);
+  border-radius: 20px;
+ }
+ 
+ .backCard:hover {
+  box-shadow: 0px 0px 30px 1px var(--action-color-neutral);
+ }
 
 .backButton {
   width: 25%;
   background-size: cover;
   padding: 10%
 }
+/* End hover-effect card styling */
 
-.confirmButton {
-  width: 12.5%;
-  margin-left: 62%;
-}
 
 .loadingSymbol {
   display: flex;

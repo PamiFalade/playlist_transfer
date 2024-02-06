@@ -1,19 +1,7 @@
-.card {
-    position: relative;
-    width: 30vw;
-    height: 30vh;
-    margin-left: 35vw;
-    margin-bottom: 2vw;
-  }
-  
   .form {
     position: relative;
     height: 13vh;
     width: 25vw;
-  }
-  
-  .form > * {
-    position: absolute;
   }
   
   .entry {

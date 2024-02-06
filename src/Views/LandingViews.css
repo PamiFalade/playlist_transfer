@@ -1,26 +1,6 @@
-h1 {
-  font-weight: bold;
-}
-
-.card {
-  background-color: #2e5cab;
-  position: relative;
-  width: 30vw;
-  height: 25vh;
-  margin-left: 35vw;
-  margin-bottom: 2vw;
-  padding: 1vw;
-
-  font-family: sans-serif;
-  font-weight: bold;
-  color: antiquewhite;
-}
-
 .form {
-  position: relative;
-  height: 13vh;
-  width: 25vw;
-  padding: 1vh 0vw 1vh;
+  margin-top: 10%;
+  margin-left: 10%;
 }
 
 .form > * {
