@@ -26,3 +26,8 @@
 ** I use useRef to regulate how many characters the displayed name of the song and artists can be in the TracklistDisplay. This hook allows me to make a reference to the appropriate DOM element, so that I can access its width property through the Javascript code. This is a value that would not cause a re-render, hence it is best handled with a useRef hook.
 * CSS Best Practice: Make elements' styling depend on the parents
 ** This makes it easier to reuse components in different settings
+* Media queries
+** Media queries are used to check certain attributes, such as the size of the viewport, orientation of the viewport (portrait or landscape), resolution, and more.
+** Media queries can help you design the website so that it is responsive to such things.
+** I used media queries to check if system's color theme. It defaults the color theme of the web app based on the user's device setting.
+** Media queries are originally a CSS feature, but can be used in JavaScript using the window.matchMedia() method.

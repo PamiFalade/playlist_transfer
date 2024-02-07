@@ -4,16 +4,23 @@ import { Outlet } from "react-router-dom";
 
 export default function RootLayout() {
 
-    // // Get the the system's color theme
-    // const getSystemTheme = () => window.matchMedia("(prefers-color-scheme: dark)");
-    // console.log(getSystemTheme);
-
-    let defaultColorTheme = document.getElementById('root').getAttribute('data-theme');
     let rootElem = document.documentElement;    // Gets a reference to the root node of the document
-
-
     // State variables for setting the theme of the web app
-    const [colorTheme, setColorTheme] = useState(defaultColorTheme);   //Change default to be the system setting
+    const [colorTheme, setColorTheme] = useState("");   //Change default to be the system setting
+
+    // Get the the system's color theme
+    const setInitialTheme = () => {
+        let systemTheme = window.matchMedia("(prefers-color-scheme: dark)");    // Check if the system's theme is dark theme
+        if(systemTheme.matches) {
+            rootElem.setAttribute('data-theme', 'dark');
+        }
+        else {
+            rootElem.setAttribute('data-theme', 'light');
+        }
+        setColorTheme(rootElem.getAttribute('data-theme'));
+    }
+
+    useEffect(setInitialTheme, []);
     
     const toggleColorTheme = () => {
         (colorTheme === "light") ? rootElem.setAttribute('data-theme', "dark") : rootElem.setAttribute('data-theme', "light");
