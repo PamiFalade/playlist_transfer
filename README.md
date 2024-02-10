@@ -31,3 +31,6 @@
 ** Media queries can help you design the website so that it is responsive to such things.
 ** I used media queries to check if system's color theme. It defaults the color theme of the web app based on the user's device setting.
 ** Media queries are originally a CSS feature, but can be used in JavaScript using the window.matchMedia() method.
+* React Router v6
+** createBrowserRouter and Route tags
+** Hooks: Loaders (useLoaderData), URL Parameters (useParams), Location for breadcrumbs (useLocation), 
