@@ -5,6 +5,7 @@
     flex-direction: column;
     background-color: var(--tertiary-bg-color);
     border: solid 1px var(--secondary-fg-color);
+    scrollbar-color: var(--secondary-fg-color) var(--secondary-bg-color);
     overflow-y: scroll;
 }
 
