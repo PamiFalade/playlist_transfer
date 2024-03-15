@@ -6,30 +6,42 @@ const ThemeSwitch = () => {
     // State variables for setting the theme of the web app
     const [colorTheme, setColorTheme] = useState("");   //Change default to be the system setting
 
+    // Get theme setting from previous session
+
     // Get the the system's color theme
     const setInitialTheme = () => {
-        let systemTheme = window.matchMedia("(prefers-color-scheme: dark)");    // Check if the system's theme is dark theme
-        if(systemTheme.matches) {
-            rootElem.setAttribute('data-theme', 'dark');
+        console.log(localStorage.getItem('theme'));
+        let theme = localStorage.getItem('theme');    // Check the theme that the user last selected
+        if(theme === null) {                            // If the user doesn't have a theme setting saved, match the system default
+            let systemTheme = window.matchMedia("(prefers-color-scheme: dark)");    // Check if the system's theme is dark theme
+            if(systemTheme.matches) {
+                theme = 'dark';
+            }
+            else {
+                theme = 'light';
+            }
         }
-        else {
-            rootElem.setAttribute('data-theme', 'light');
-        }
+        
+        rootElem.setAttribute('data-theme', theme);
         setColorTheme(rootElem.getAttribute('data-theme'));
     };
 
     useEffect(setInitialTheme, []);
     
     const toggleColorTheme = () => {
-        (colorTheme === "light") ? rootElem.setAttribute('data-theme', "dark") : rootElem.setAttribute('data-theme', "light");
+        let theme = "";
+        (colorTheme === "light") ? theme = "dark" : theme = "light";
+        rootElem.setAttribute('data-theme', theme);
         setColorTheme(rootElem.getAttribute('data-theme'));
+        localStorage.setItem("theme", theme);
+        console.log(localStorage.getItem('theme'));
     };
 
     return(
         <div>
             {/* Switch that will toggle dark and light mode */}
             <div className="modeSwitch">
-                <label className="switch" for="switch">
+                <label className="switch" htmlFor="switch">
                     <input id="switch" type="checkbox" className="circle" checked={colorTheme==="light"} onChange={toggleColorTheme}/>
                     <svg
                     viewBox="0 0 384 512"

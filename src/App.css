@@ -5,6 +5,8 @@
   --action-color-soundcloud: orange;
   --action-color-youtube: red;
   --action-color-apple: linear-gradient(90deg, rgba(102,58,255,255) 0%, rgba(255,0,79,255) 50%, rgba(0,158,255,255) 100%);
+  --action-primary-bg-color: #3654ff;
+  --action-secondary-bg-color: #adb3bc;
 }
 
 /* Variables for light color theme */
@@ -13,10 +15,11 @@
   --secondary-bg-color: #dee4e7;
   --tertiary-bg-color: #adb3bc;
 
+  --action-color-neutral: black;
+
   --primary-fg-color: black;
   --secondary-fg-color: #464033;
 
-  --action-color-neutral: darkgrey;
 }
 
 /* Variables for dark color theme */
@@ -24,19 +27,20 @@
   --primary-bg-color: #212121;
   --secondary-bg-color: #0F0F0F;
   --tertiary-bg-color: ;
+
+  --action-color-neutral: white;
   
   --primary-fg-color: white;
   --secondary-fg-color: #bbc4c2;
 
-  --action-color-neutral: white;
 }
-
 
 html {
   width: 100vw;
   height: 100vh;
   padding: 0;
   background-color: var(--primary-bg-color);
+  overflow-x: hidden;
 }
 
 nav {
@@ -51,7 +55,6 @@ nav {
 body {
   padding: 0vh 5vw;
   background-color: var(--primary-bg-color);
-
 }
 
 .mainSection {
@@ -80,6 +83,43 @@ h1 {
 h5, p {
   color: var(--secondary-fg-color);
 }
+
+/* Buttons */
+.button {
+  align-items: center;
+  border: 0;
+  border-radius: 8px;
+  box-sizing: border-box;
+  display: flex;
+  font-family: Phantomsans, sans-serif;
+  font-size: 18px;
+  justify-content: center;
+  line-height: 1em;
+  max-width: 20%;
+  min-width: 100px;
+  max-height: 50%;
+  padding: 3% 1.5%;
+  white-space: nowrap;
+  cursor: pointer;
+}
+  
+.submitButton {
+  background-color: var(--action-primary-bg-color);
+  color: white;
+}
+
+.returnButton {
+  background-color: var(--action-secondary-bg-color);
+  color: black;
+}
+
+.actionButtons {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+/* End buttons */
 
 /* Special card with "colored outline on hover" effect */
 .backCard {
@@ -125,31 +165,49 @@ h5, p {
 }
 
 .breadcrumbs {
-  width: 65%;
+  width: 80%;
   height: 100%;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
 }
-.breadcrumbs > * {
-  margin: 1vh 0.5vw 2vh;
-}
 
 .crumb {
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
   align-items: center;
-  width: 17%;
-  height: 100%;
-  border-radius: 50%;
+  width: 15%;
+  height: 60%;
+  padding-top: 2%;
+  border-radius: 5%;
 }
 
+.crumbActive {
+  background-color:var(--secondary-bg-color);
+}
 
+.crumbInactive {
+  background-color: var(--primary-bg-color);
+}
 
+.crumb::after {
+  content: ">";
+  display: block;
+  height: 100%;
+  margin-left: 7%;
+  margin-bottom: 12%;
+}
 
+.crumb:last-child::after {
+  content: "";
+}
+
+.scrollable {
+    overflow-y: scroll;
+    scrollbar-color: var(--secondary-fg-color) var(--secondary-bg-color);
+}
 
 /* The light/dark mode switch container */
 .modeSwitch {

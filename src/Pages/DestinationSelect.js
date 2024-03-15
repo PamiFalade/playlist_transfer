@@ -112,7 +112,7 @@ const DestinationSelect = () => {
                             <img className="profilePic" src={userAccount.profileImg} />
                             <h2>{userAccount.username}</h2>
                         </div>
-                        <div id="userPlaylistsDisplay">
+                        <div id="userPlaylistsDisplay" className="scrollable">
                             {userAccount.playlists.map((playlist, index) => {
                                 index++;
                                 return <div className="playlistCard" key={index} >
@@ -122,14 +122,14 @@ const DestinationSelect = () => {
                                 </div>
                             })}
                         </div>
-                        <div className="confirmButtons">
-                            <Button variant="secondary" id="backButton" onClick={handleLoggedIn}>
+                        <div className="actionButtons">
+                            <button className="button returnButton" onClick={handleLoggedIn}>
                                 Go Back
-                            </Button>
+                            </button>
 
-                            <Button variant="primary" id="transferButton" onClick={beginTransferPlaylist}>
+                            <button className="button submitButton" onClick={beginTransferPlaylist}>
                                 Transfer Playlist
-                            </Button>
+                            </button>
                         </div>
                     </div>
                 )}

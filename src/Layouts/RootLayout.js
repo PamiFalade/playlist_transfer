@@ -5,7 +5,7 @@ import ThemeSwitch from "../Components/ThemeSwitch.js";
 
 export default function RootLayout() {
 
-    const [playlistConfirmLink, setPlaylistConfirmLink] = useState(null);
+    const [playlistConfirmLink, setPlaylistConfirmLink] = useState(localStorage.getItem("playlistConfirmNavigation"));
     const [destSelectLink, setDestSelectLink] = useState(null);
 
     const currentLocation = useLocation();
@@ -14,9 +14,11 @@ export default function RootLayout() {
 
         if(currentLocation.pathname.includes('playlist-confirm')) {
             setPlaylistConfirmLink(currentLocation.pathname);
+            localStorage.setItem("playlistConfirmNavigation", currentLocation.pathname)
             setDestSelectLink(null);
         }
         else if(currentLocation.pathname.includes('destination-select')) {
+            console.log(playlistConfirmLink);
             setDestSelectLink(currentLocation.pathname);
         }
         else {
@@ -39,7 +41,7 @@ export default function RootLayout() {
 
                 <nav>
                     <div className="breadcrumbs">
-                        <div className="crumb">
+                        <div className="crumb crumbActive">
                             <Link to={"/"}>
                                 <p>
                                     Find Playlist
@@ -47,7 +49,7 @@ export default function RootLayout() {
                             </Link>
                         </div>
                         {playlistConfirmLink &&
-                            <div className="crumb">
+                            <div className="crumb crumbActive">
                                 
                                     <Link to={playlistConfirmLink}>
                                         <p>
@@ -57,14 +59,15 @@ export default function RootLayout() {
                             </div>
                         }
                         {playlistConfirmLink === null &&
-                            <p>
-                                Playlist Confirm
-                            </p>
+                           <div className="crumb crumbInactive">
+                                <p>
+                                    Playlist Confirm
+                                </p>
+                            </div>
                         }
 
                         {destSelectLink && 
-                            <div className="crumb">
-                            
+                            <div className="crumb crumbActive">
                                     <Link to={destSelectLink}>
                                         <p>
                                             Destination Select
@@ -73,9 +76,11 @@ export default function RootLayout() {
                             </div>
                          }
                         {destSelectLink === null &&
-                             <p>
-                                 Destination Select
-                             </p>
+                             <div className="crumb crumbInactive">
+                                <p>
+                                    Destination Select
+                                </p>
+                         </div>
                          }
                     </div>
                 </nav>

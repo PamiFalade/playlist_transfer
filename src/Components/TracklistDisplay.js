@@ -26,14 +26,14 @@ const TracklistDisplay = (props) => {
     }, []);
 
     return(
-        <ul className="tracklistDisplay" ref={refTrackListDisplay}>
+        <ul className="tracklistDisplay scrollable" ref={refTrackListDisplay}>
             {tracks.map((song, index) => {
                 return (
                 <li key={index}>
                     <div className="songDisplay">
                         <img className="songImg" src={song.image !== "" ? song.image : sharedService.missingTrackImg}/>
                         <div className="songInfo">
-                            <h5>{sharedService.truncateString(song.name, trackListWidth/20)}</h5>
+                            <h5>{(index+1) + "." + sharedService.truncateString(song.name, trackListWidth/20)}</h5>
                             <p>{sharedService.truncateString(song.artists, trackListWidth/18)}</p>
                         </div>
                     </div>

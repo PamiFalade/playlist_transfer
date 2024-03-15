@@ -42,18 +42,3 @@
     height: 90%;
     margin: 0vh 1vw;
 }
-
-.confirmButtons {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 35% 10% auto 10% 35%;
-    margin-top: 5%;
-}
-
-#backButton {
-    grid-column-start: 2;
-}
-
-#transferButton {
-    grid-column-start: 4;
-}

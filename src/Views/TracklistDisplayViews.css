@@ -1,12 +1,10 @@
 .tracklistDisplay {
     max-height: 35vh;
-    width: 27vw;
+    min-width: 27vw;
     display: flex;
     flex-direction: column;
     background-color: var(--tertiary-bg-color);
     border: solid 1px var(--secondary-fg-color);
-    scrollbar-color: var(--secondary-fg-color) var(--secondary-bg-color);
-    overflow-y: scroll;
 }
 
 li {

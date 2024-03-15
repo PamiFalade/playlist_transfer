@@ -15,7 +15,7 @@ const LinkInput = () => {
           <h2 className="cardTitle">With the Share Link...</h2>
             <Form method="post" className="form" action="">
               <input type="url" className="entry" name="playlistLink"/>
-              <button className="submitButton">Submit</button>
+              <button className="button submitButton">Submit</button>
             </Form>
         </div>
       </div>

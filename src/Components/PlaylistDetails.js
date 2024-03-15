@@ -185,13 +185,15 @@ const PlaylistDetails = () => {
                             <p>{playlist.tracks.length} songs | {playlist.length}</p>
                         </div>
                         <TracklistDisplay playlist={playlist.tracks}/>
-                        <button className="btn btn-secondary" type="button" onClick={navigateBack}>
-                            Back
-                        </button>
+                        <div className="actionButtons">
+                            <button className="button returnButton" type="button" onClick={navigateBack}>
+                                Back
+                            </button>
 
-                        <button className="btn btn-primary confirmButton" type="button" onClick={openDestinationSelect}>
-                            This is it!
-                        </button>
+                            <button className="button submitButton" type="button" onClick={openDestinationSelect}>
+                                This is it!
+                            </button>
+                        </div>
                     </div> }
 
                 </div>
