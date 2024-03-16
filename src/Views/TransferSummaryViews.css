@@ -7,12 +7,21 @@
 }
 
 .mainCard {
-    position: relative;
-    width: 60vw;
+    position: absolute;
+    top: 33vh;
+    left: 25vw;
+    width: 50vw;
+    min-height: 40vh;
     max-height: 67vh;
-    margin-top: 16.33%;
-    margin-left: 25%;
+    border-radius: 20px;
+    background-color: var(--primary-bg-color);
+    padding: 2%;
     
     display: flex;
     flex-direction: column;
+    align-items: center;
+}
+
+.confirmButton {
+    margin: 4vh;
 }

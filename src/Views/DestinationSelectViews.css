@@ -1,27 +1,22 @@
-main {
-    background-color: brown;
-    position: relative;
-}
-
 #userAccountDisplay {
-    width: 90%;
-    height: 90%;
+    width: 70vw;
+    height: 70vh;
     border: solid 1.5px black;
     border-radius: 2.5%;
-    background-color: aliceblue;
-    position: absolute;
-    left: 5%;
+    background-color: var(--secondary-bg-color);
     display: flex;
     flex-direction: column;
+    margin-top: 10vh;
 }
 
 #accountInfo {
     width: 100%;
+    height: 17%;
     padding: 1%;
     display: flex;
     flex-direction: row;
     justify-content: center;
-    align-items: start;
+    align-items: center;
 }
 
 #userPlaylistsDisplay {
@@ -44,21 +39,6 @@ main {
 
 .profilePic {
     border-radius: 50%;
-}
-
-.confirmButtons {
-    position: absolute;
-    bottom: 5%;
-    width: 100%;
-    display: grid;
-    grid-template-columns: 35% 10% auto 10% 35%;
-    margin-top: 5%;
-}
-
-#backButton {
-    grid-column-start: 2;
-}
-
-#transferButton {
-    grid-column-start: 4;
+    height: 90%;
+    margin: 0vh 1vw;
 }

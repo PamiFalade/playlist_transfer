@@ -271,7 +271,7 @@ export const fetchPlaylistAndTracks = async (token, playlistID) => {
     username: playlist.owner.display_name,
     id: playlistID,
     tracks: [...playlist.tracks.items, ...extraTracks],
-    image: playlist.images[0].url
+    image: playlist.images[1].url
   };
 
   return fullPlaylist;
@@ -294,7 +294,6 @@ const extractSongArtists = (song) => {
 export const extractSongInfo = (playlist) => {
     let formattedSongArray = [];
     let totalDuration = 0;  // The total run time of the playlist 
-let count = 1;
     playlist.tracks.forEach(song => {
         // Get the list of artists for the song
         let artistList = extractSongArtists(song);

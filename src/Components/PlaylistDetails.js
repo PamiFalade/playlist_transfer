@@ -56,12 +56,13 @@ const PlaylistDetails = () => {
     /// that hold the playlist and indicate if the playlist has been found
     const handleSetPlaylist = async (retrievedPlaylist) => {
         // Made extractSongInfo() available at this level because the SoundCloud API can't be used in the same way as the others
-        retrievedPlaylist = await webService.extractSongInfo(sourcePlatform, retrievedPlaylist); // Get the important details of each song and put in general template
+        retrievedPlaylist = await webService.extractSongInfo(sourcePlatform, retrievedPlaylist)      // Get the important details of each song and put in general template
+            .then(() => {
+                setLoading(false);
+                setPlaylist(retrievedPlaylist);
+                setFoundPlaylist(true);
+            }); 
 
-
-        setLoading(false);
-        setPlaylist(retrievedPlaylist);
-        setFoundPlaylist(true);
      };
  
     /// SoundCloud Widget player stuff
@@ -113,7 +114,7 @@ const PlaylistDetails = () => {
 
     /// Call the webService methods that fetch the Spotify token and then fetch the requested playlist
     const loadSpotifyPlaylist = async() => {
-        let token;
+        let token = "";
 
         await webService.fetchToken(sourcePlatform)
             .then((tokenResponse) => {
@@ -128,6 +129,14 @@ const PlaylistDetails = () => {
             });        
     };
 
+    const loadPlaylist = async() => {
+        await webService.fetchPlaylist(sourcePlatform, "", playlistID)
+            .then((playlistResponse) => {
+                console.log(playlistResponse);
+                handleSetPlaylist(playlistResponse);
+            });
+    };
+
     /// Load the SoundCloud Widget API, or fetch the playlists through the other platforms' API's
     useEffect(() => {
         if(sourcePlatform === "soundcloud") {
@@ -136,51 +145,60 @@ const PlaylistDetails = () => {
         else if(sourcePlatform === "spotify") {
         loadSpotifyPlaylist();
         }
+        else {
+            loadPlaylist();
+        }
 
     }, [sourcePlatform, playlistID]);
       
 
     return(
-        <div id="playlistSummary">
-            
-            {/* Loading symbol */}
-            { loading && 
-                <div className="loadingSymbol">
-                    <h2>Loading...</h2>
-                    <ScaleLoader 
-                        color="antiquewhite"
-                        loading={loading}
-                        size={150}
-                        aria-label="Loading Spinner"
-                        data-testid="loader"/>
+        <main>
+            <div className="mainSection">
+                <div id="playlistSummary">
+                    
+                    {/* Loading symbol */}
+                    { loading && 
+                        <div className="loadingSymbol">
+                            <h2>Fetching Playlist...</h2>
+                            <ScaleLoader 
+                                color="var(--primary-fg-color)"
+                                loading={loading}
+                                size={150}
+                                aria-label="Loading Spinner"
+                                data-testid="loader"/>
+                        </div>
+                    }
+
+                    {/* SoundCloud Widget API */}
+                    { foundPlaylist === false && sourcePlatform === "soundcloud" &&
+                        <iframe ref={iframeRef} className="sc-widget" id="SCwidget" width="0px" height="500%" allow="autoplay" style={{position:"absolute", left:"0", top:"0", fontSize:"40"}}
+                                src={`https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/${playlistID}/&color=%23ff5500&auto_play=false&hide_related=false&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false`} /> 
+                }
+
+
+                { foundPlaylist === true &&
+                    <div>
+                        <img id="playlistImage" src={playlist.image}/>
+                        <h2>{playlist.playlistName}</h2>
+                        <div id="playlistInfo">
+                            <p>{playlist.tracks.length} songs | {playlist.length}</p>
+                        </div>
+                        <TracklistDisplay playlist={playlist.tracks}/>
+                        <div className="actionButtons">
+                            <button className="button returnButton" type="button" onClick={navigateBack}>
+                                Back
+                            </button>
+
+                            <button className="button submitButton" type="button" onClick={openDestinationSelect}>
+                                This is it!
+                            </button>
+                        </div>
+                    </div> }
+
                 </div>
-            }
-
-            {/* SoundCloud Widget API */}
-            { foundPlaylist === false && sourcePlatform === "soundcloud" &&
-                <iframe ref={iframeRef} className="sc-widget" id="SCwidget" width="0px" height="500%" allow="autoplay" style={{position:"absolute", left:"0", top:"0", fontSize:"40"}}
-                        src={`https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/${playlistID}/&color=%23ff5500&auto_play=false&hide_related=false&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false`} /> 
-           }
-
-
-           { foundPlaylist === true &&
-            <div>
-                <img id="playlistImage" src={playlist.image}/>
-                <h2>{playlist.playlistName}</h2>
-                <div id="playlistInfo">
-                    <p>{playlist.tracks.length} songs | {playlist.length}</p>
-                </div>
-                <TracklistDisplay playlist={playlist.tracks}/>
-                <button className="btn btn-secondary" type="button" onClick={navigateBack}>
-                    Back
-                </button>
-
-                <button className="btn btn-primary confirmButton" type="button" onClick={openDestinationSelect}>
-                    This is it!
-                </button>
-            </div> }
-
-        </div>
+            </div>
+        </main>
     );
 };
 

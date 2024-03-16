@@ -3,6 +3,7 @@ import * as spotify from "./platformServices/spotifyService";
 import * as apple from "./platformServices/appleService";
 import * as deezer from "./platformServices/deezerService";
 import * as soundcloud from "./platformServices/soundcloudService";
+import * as youtube from "./platformServices/youtubeService";
 
 /// Object used to store the clientIDs and secrets of the various platforms
 const credentials = {
@@ -34,6 +35,9 @@ const extractPlaylistSource = (link) => {
     }
     else if(link.startsWith("https://soundcloud.com/")){
     source = "soundcloud";
+    }
+    else if(link.startsWith("https://music.youtube.com/playlist?")){
+      source = "youtube";
     };
     
     return source;
@@ -53,6 +57,9 @@ const extractPlaylistID = (source, link) => {
       break;
     case "soundcloud":
       playlistID = soundcloud.extractPlaylistID(link);
+      break;
+    case "youtube":
+      playlistID = youtube.extractPlaylistID(link);
       break;
     default:
       playlistID = "";
@@ -90,6 +97,9 @@ export const fetchPlaylist = (source, token, playlistID) => {
     case "spotify":
       playlist = spotify.fetchPlaylistAndTracks(token, playlistID);
       break;
+    case "youtube":
+      playlist = youtube.fetchPlaylistAndTracks(playlistID);
+      break;
     default:
       playlist = null;
   }
@@ -109,6 +119,9 @@ export const extractSongInfo = async (source, playlist) => {
     case "soundcloud":
       formattedPlaylist = await soundcloud.extractSongInfo(playlist);
       break;
+    case "youtube":
+      formattedPlaylist = await youtube.extractSongInfo(playlist);
+      break;
     default:
       return;
   }
@@ -119,10 +132,12 @@ export const extractSongInfo = async (source, playlist) => {
 
 /// Get the user to log in to their account on the appropriate platform and authorize the app to have the specified access 
 export const redirectToUserAuthorization = (source) => {
-  console.log(source);
   switch(source){
     case "spotify":
       spotify.redirectToUserAuthorization();
+      break;
+    case "youtube":
+      youtube.redirectToUserAuthorization();
       break;
     default:
       break;
@@ -131,21 +146,32 @@ export const redirectToUserAuthorization = (source) => {
 };
 
 /// Get the token that is provided once the user authorizes the application
-export const getUserAuthorizationToken = (source) => {
-  let authToken = spotify.getUserAuthorizationToken();
+export const getUserAuthorizationToken = async (source) => {
+  let authToken;
+
+  switch(source){
+    case "spotify":
+      authToken = spotify.getUserAuthorizationToken();
+      break;
+    case "youtube":
+      authToken = youtube.getUserAuthorizationToken();
+      break;
+    default:
+      break;
+  };
 
   return authToken;
 };
 
 /// Use the user authorization token to get their account i.e., the account name, their playlists
-export const getUserAccount = (token, source) => {
+export const getUserAccount = async (token, source) => {
   let userAccount;
   switch(source){
     case "spotify":
-      userAccount = spotify.getUserAccount(token);
+      userAccount = await spotify.getUserAccount(token);
       break;
-    case "apple":
-      // userDetails = apple.getUserDetails(token);
+    case "youtube":
+      userAccount = await youtube.getUserAccount(token);
       break;
     default:
       break;
@@ -161,10 +187,20 @@ export const extractSongTitle = (source, title) => {
 };
 
 
-export const transferPlaylist = async (token, userID, playlist) => {
+export const transferPlaylist = async (destPlatform, token, userID, playlist) => {
   let missingTracks;  // The list of songs that were not transferred due to an error
 
-  missingTracks = await spotify.transferPlaylist(token, userID, playlist);
+  switch(destPlatform){
+    case "spotify":
+      missingTracks = await spotify.transferPlaylist(token, userID, playlist);
+      break;
+    case "youtube":
+      missingTracks = await youtube.transferPlaylist(token, userID, playlist);
+      break;
+    default:
+      break;
+  };
+
 
   return missingTracks;
 };

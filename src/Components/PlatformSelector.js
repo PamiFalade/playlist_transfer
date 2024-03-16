@@ -4,29 +4,36 @@ import "../Views/PlatformSelectorViews.css";
 import { redirectToUserAuthorization } from "../models/webService";
 
 
-const PlatformSelector = () => {
+const PlatformSelector = (props) => {
 
+    // Title that will be at the top of the card
+    const title = props.title;
 
     const handleLogin = (id) => {
         console.log(id);
-        let platform = "";
+        let destPlatform = "";
         switch(id){
             case "spotifyButton":
-                platform = "spotify";
+                destPlatform = "spotify";
                 break;
             case "appleButton":
-                platform = "apple";
+                destPlatform = "apple";
                 break;
-            case "soundcloudButton":
-                platform = "soundcloud";
+            case "youtubeButton":
+                destPlatform = "youtube";
                 break;
         };
 
-        redirectToUserAuthorization(platform);
+        redirectToUserAuthorization(destPlatform);
+        sessionStorage.setItem("destPlatform", JSON.stringify(destPlatform));
+
     };
 
     return(
         <Card id="platformCard">
+            <Card.Title>
+                <h2>{title}</h2>
+            </Card.Title>
             <Card.Body>
             <div id="platformGrid">
                 <div className="logoContainer" id="spotifyButton" onClick={() => {handleLogin("spotifyButton")}}>
@@ -35,8 +42,8 @@ const PlatformSelector = () => {
                 <div className="logoContainer" id="appleButton" onClick={() => {handleLogin("appleButton")}}>
                     <img className="platformLogo" src="apple-music.svg" />
                 </div>
-                <div className="logoContainer" id="soundcloudButton" onClick={() => {handleLogin("soundcloudButton")}}>
-                    <img  className="platformLogo" src="soundcloud.svg" />
+                <div className="logoContainer" id="youtubeButton" onClick={() => {handleLogin("youtubeButton")}}>
+                    <img  className="platformLogo" src="youtube-music.svg" />
                 </div>
 
             </div>

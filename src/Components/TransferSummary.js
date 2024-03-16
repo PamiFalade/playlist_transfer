@@ -1,6 +1,5 @@
 import "../Views/TransferSummaryViews.css";
 import { useNavigate } from "react-router-dom";
-import { Card, Button } from "react-bootstrap";
 import TracklistDisplay from "./TracklistDisplay";
 
 const TransferSummary = (playlist) => {
@@ -15,24 +14,22 @@ const TransferSummary = (playlist) => {
     };
     
     return(
-        <Card className="mainCard">
-            <Card.Title>Transfer Complete!</Card.Title>
-            <Card.Subtitle>{missingSongs.length === 0 ? `All songs were transferred successfully!` : `The following songs were not transferred...`}</Card.Subtitle>
-            
+        <div className="mainCard">
+            <div>
+                <h2>Transfer Complete!</h2>
+                <h5>{missingSongs?.length === 0 ? `All songs were transferred successfully!` : `The following songs were not transferred...`}</h5>
+            </div>
            { missingSongs.length > 0 && 
-            <Card.Body>
                 <TracklistDisplay playlist={missingSongs} />
-            </Card.Body> 
             }
 
-
-            <Card.Footer>
+            <div>
                 <button className="btn btn-primary confirmButton" type="button" onClick={navigateHome}>
                     Transfer another playlist!
                 </button>
-            </Card.Footer>
+            </div>
 
-        </Card>
+        </div>
     );
 
 };

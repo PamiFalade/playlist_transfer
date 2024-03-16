@@ -3,11 +3,9 @@ h2 {
 }
 
 #playlistSummary {
-    position: relative;
-    width: 50vw;
-    height: 90vh;
-    left: 25vw;
-    background-color: #823333;
+    width: 50%;
+    height: 90%;
+    background-color: var(--secondary-bg-color);
     display: flex;
     flex-direction: column;
     align-items: center;

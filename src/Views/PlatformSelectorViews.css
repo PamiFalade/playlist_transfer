@@ -1,12 +1,10 @@
 #platformCard {
-  background-color: #394c8a;
-  position: relative;
-  width: 40vw;
-  height: 50vh;
-  margin-left: 30vw;
+  background-color: var(--secondary-bg-color);
+  width: 45vw;
+  height: 60vh;
   padding: 1vw;
   border-radius: 2%;
-
+  margin-top: 15vh;
 }
 
 #platformGrid {
@@ -39,7 +37,7 @@
   #platformGrid:has(#appleButton:hover){
     grid-template-columns: 0.5fr 1fr 0.5fr;
   }
-  #platformGrid:has(#soundcloudButton:hover){
+  #platformGrid:has(#youtubeButton:hover){
     grid-template-columns: 0.5fr 0.5fr 1fr;
   }
 

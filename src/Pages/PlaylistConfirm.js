@@ -7,9 +7,12 @@ import PlaylistDetails from "../Components/PlaylistDetails";
 const PlaylistConfirm = () => {
 
     return(
-        <div className="mainSection mainSectionRed">
-            <PlaylistDetails />
-        </div>
+        <main>
+            <div className="mainSection">
+                <PlaylistDetails />
+            </div>
+        </main>
+        
     );
 }
 

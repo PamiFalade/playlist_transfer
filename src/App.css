@@ -1,18 +1,69 @@
+
+/* Variables that will be the same no matter the theme */
+:root {
+  --action-color-spotify: #1cd760;
+  --action-color-soundcloud: orange;
+  --action-color-youtube: red;
+  --action-color-apple: linear-gradient(90deg, rgba(102,58,255,255) 0%, rgba(255,0,79,255) 50%, rgba(0,158,255,255) 100%);
+  --action-primary-bg-color: #3654ff;
+  --action-secondary-bg-color: #adb3bc;
+}
+
+/* Variables for light color theme */
+:root[data-theme="light"] {
+  --primary-bg-color: white;
+  --secondary-bg-color: #dee4e7;
+  --tertiary-bg-color: #adb3bc;
+
+  --action-color-neutral: black;
+
+  --primary-fg-color: black;
+  --secondary-fg-color: #464033;
+
+}
+
+/* Variables for dark color theme */
+:root[data-theme="dark"] {
+  --primary-bg-color: #212121;
+  --secondary-bg-color: #0F0F0F;
+  --tertiary-bg-color: ;
+
+  --action-color-neutral: white;
+  
+  --primary-fg-color: white;
+  --secondary-fg-color: #bbc4c2;
+
+}
+
 html {
   width: 100vw;
-  height: 105vh;
+  height: 100vh;
   padding: 0;
-  margin: 0;
+  background-color: var(--primary-bg-color);
+  overflow-x: hidden;
+}
+
+nav {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  height: 10vh;
+  width: auto;
+  margin: 1vh 2vw 2vh;
 }
 
 body {
-  padding: 0;
-  margin-top: -2vh;
+  padding: 0vh 5vw;
+  background-color: var(--primary-bg-color);
 }
 
-button {
-  margin: 2vh 0 0vh;
+.mainSection {
+  width: 90vw;
+  height: 100vh;
+  display: grid;
+  justify-items: center;
 }
+
 
 h1, h2, p {
   font-family: "Visby Round";
@@ -21,44 +72,90 @@ h1, h2, p {
 
 h1, h2 {
   text-align: center;
-  margin: 1vh 0 3vh;
-  color: antiquewhite;
+  color: var(--primary-fg-color);
 }
 
 h1 {
   font-size: 48px;
+  margin-top: 2vh;
 }
 
-.mainSection {
-  width: 100vw;
-  height: 102vh;
-  margin: 0%;
-  padding: 5vw 0 5vw;
+h5, p {
+  color: var(--secondary-fg-color);
 }
 
-.mainSectionBlue {
-  background-color: #4258f4;
+/* Buttons */
+.button {
+  align-items: center;
+  border: 0;
+  border-radius: 8px;
+  box-sizing: border-box;
+  display: flex;
+  font-family: Phantomsans, sans-serif;
+  font-size: 18px;
+  justify-content: center;
+  line-height: 1em;
+  max-width: 20%;
+  min-width: 100px;
+  max-height: 50%;
+  padding: 3% 1.5%;
+  white-space: nowrap;
+  cursor: pointer;
 }
-
-.mainSectionGreen {
-  background-color: #38858a;
-}
-
-.mainSectionRed {
-  background-color: #ba4949;
   
+.submitButton {
+  background-color: var(--action-primary-bg-color);
+  color: white;
 }
+
+.returnButton {
+  background-color: var(--action-secondary-bg-color);
+  color: black;
+}
+
+.actionButtons {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+/* End buttons */
+
+/* Special card with "colored outline on hover" effect */
+.backCard {
+  margin-bottom: 20vh;
+  width: 35vw;
+  height: 40vh;
+  background-color: var(--secondary-bg-color);
+  border-radius: 20px;
+  transition: all .3s;  
+ }
+ 
+ .frontCard {
+  margin-bottom: 20vh;
+  width: 35vw;
+  height: 40vh;
+  background-color: var(--secondary-bg-color);
+  transition: all .2s;
+  padding: 3%;
+ }
+ 
+ .frontCard:hover {
+  transform: scale(0.98);
+  border-radius: 20px;
+ }
+ 
+ .backCard:hover {
+  box-shadow: 0px 0px 30px 1px var(--action-color-neutral);
+ }
 
 .backButton {
   width: 25%;
   background-size: cover;
   padding: 10%
 }
+/* End hover-effect card styling */
 
-.confirmButton {
-  width: 12.5%;
-  margin-left: 62%;
-}
 
 .loadingSymbol {
   display: flex;
@@ -66,3 +163,177 @@ h1 {
   justify-content: center;
   align-items: center;
 }
+
+.breadcrumbs {
+  width: 80%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.crumb {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-items: center;
+  width: 15%;
+  height: 60%;
+  padding-top: 2%;
+  border-radius: 5%;
+}
+
+.crumbActive {
+  background-color:var(--secondary-bg-color);
+}
+
+.crumbInactive {
+  background-color: var(--primary-bg-color);
+}
+
+.crumb::after {
+  content: ">";
+  display: block;
+  height: 100%;
+  margin-left: 7%;
+  margin-bottom: 12%;
+}
+
+.crumb:last-child::after {
+  content: "";
+}
+
+.scrollable {
+    overflow-y: scroll;
+    scrollbar-color: var(--secondary-fg-color) var(--secondary-bg-color);
+}
+
+/* The light/dark mode switch container */
+.modeSwitch {
+  position: absolute;
+  top: 3vh;
+  right: 3vw;
+}
+
+.switch {
+  --color-dark: #0c0f14;
+  --color-darkGray: #21262e;
+  --color-gray: #52555a;
+  --color-offwhite: #cecece;
+  --shadow-color: var(--color-dark);
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 60px;
+  height: fit-content;
+  background-color: var(--color-dark);
+  border-radius: 30px;
+  padding: 4px;
+  transition: all 0.5s ease;
+  
+  user-select: none;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+/* Svg styles */
+.switch .svg {
+  transition: all 0.3s ease;
+  position: absolute;
+  left: 5px;
+}
+.switch .moon {
+  width: 18px;
+  fill: var(--color-gray);
+  opacity: 1;
+}
+
+.switch .sun {
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  left: calc(100% - 21.5px);
+  top: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scale: 0.8;
+  opacity: 0;
+}
+
+.switch .sun .dot {
+  position: relative;
+  display: block;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--color-dark);
+  background: white;
+  z-index: 1;
+  box-shadow: 11px 0px 0px var(--shadow-color),
+    10.3px 0px 0px var(--shadow-color), -11px 0px 0px var(--shadow-color),
+    -10.3px 0px 0px var(--shadow-color), 0px -11px 0px var(--shadow-color),
+    0px -10.3px 0px var(--shadow-color), 0px 11px 0px var(--shadow-color),
+    0px 10.3px 0px var(--shadow-color), 8px 8px 0px var(--shadow-color),
+    7.3px 7.3px 0px var(--shadow-color), 8px -8px 0px var(--shadow-color),
+    7.3px -7.3px 0px var(--shadow-color), -8px -8px 0px var(--shadow-color),
+    -7.3px -7.3px 0px var(--shadow-color), -8px 8px 0px var(--shadow-color),
+    -7.3px 7.3px 0px var(--shadow-color);
+}
+
+.switch .sun .dot::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid var(--color-dark);
+}
+
+/*checkbox styles */
+.switch .circle {
+  appearance: none;
+  position: relative;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  left: 0;
+  background-color: var(--color-darkGray);
+  border: 1px solid var(--color-darkGray);
+  transition: all 0.5s ease;
+  
+  box-shadow: 1px 1px 20px 3px var(--color-darkGray);
+}
+
+.switch:has(.circle:checked) {
+  background: var(--color-offwhite);
+}
+
+.switch .circle:hover {
+  margin-left: 3px;
+}
+.switch .circle:checked:hover {
+  margin-left: -3px;
+}
+
+.switch .circle:checked {
+  left: calc(100% - 24px);
+  background: white;
+  border-color: white;
+  box-shadow: 1px 1px 30px 12px white;
+}
+
+.switch:has(.circle:checked) > .sun {
+  opacity: 1;
+}
+
+.switch:has(.circle:checked) > .moon {
+  opacity: 0;
+}
+/* End of theme switch styling */
