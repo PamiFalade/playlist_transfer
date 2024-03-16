@@ -1,4 +1,4 @@
-##Things I've Learned
+## Things I've Learned
 * Different types of loops have different levels of performance
     * forEach loops are 6 times slower than do-while loops, and 4 times slower than for loops and while loops
 * Working with API's, asynchronous functions
