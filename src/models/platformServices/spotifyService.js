@@ -278,15 +278,15 @@ export const fetchPlaylistAndTracks = async (token, playlistID) => {
 };
 
 // Helper function to get the names of the artists on a song and put them in a comma-separated string
-const extractSongArtists = (song) => {
-  let artistList = song.track.artists[0].name;
+const extractSongArtists = (artistList) => {
+  let formattedArtistList = artistList[0].name;
   let index = 1;
-  while(index < song.track.artists.length) {
-      artistList += ", " + song.track.artists[index].name;
+  while(index < artistList.length) {
+      formattedArtistList += ", " + artistList[index].name;
       index++;
   }
 
-  return artistList;
+  return formattedArtistList;
 };
 
 /// Extracts the song's title, image, artist(s), and length, and checks if it is explicit from
@@ -296,7 +296,7 @@ export const extractSongInfo = (playlist) => {
     let totalDuration = 0;  // The total run time of the playlist 
     playlist.tracks.forEach(song => {
         // Get the list of artists for the song
-        let artistList = extractSongArtists(song);
+        let artistList = extractSongArtists(song.track.artists);
 
         totalDuration += song.track.duration_ms;
 
@@ -353,7 +353,7 @@ const searchTrackByISRC = async (token, songISRC) => {
   
   let queryToEncode = `isrc:${songISRC}`;
   let encodedQuery = encodeURIComponent(queryToEncode);
-  let results = fetch(`https://api.spotify.com/v1/search?q=${encodedQuery}&type=track&limit=50`, {
+  let results = await fetch(`https://api.spotify.com/v1/search?q=${encodedQuery}&type=track&limit=50`, {
     method: "GET",
     headers: {
       Authorization: "Bearer " + token.access_token
@@ -449,6 +449,41 @@ const addTracksToPlaylist = (token, tracksURIArray, playlistID) => {
   return addTracksResponse;
 };
 
+/// Used to compile the search results of the tracks on the destination platform
+export const getNewPlaylist = async (token, playlist) => {
+  
+  let tracksFromSearch = [];
+  let missingTracks = [];     // List of songs that could not be found reliably on Spotify
+
+  // Find and retrieve the Spotify URI's for all the tracks that will be put into the transferred playlist
+  for(const song of playlist.tracks){
+    if(song.isrc === "") {      // CHANGE TO SEARCH TRACK BY NAME WHEN THERE'S NO ISRC
+      missingTracks.push(song);
+      return;
+    }
+
+    await searchTrackByISRC(token, song.isrc)   // Get the search results for all the tracks in the playlist
+      .then((searchResults) => {
+        let track = {
+          name: searchResults.tracks.items[0].name,
+          album: searchResults.tracks.items[0].album.name,
+          image: searchResults.tracks.items[0].album.images.length > 0 ? searchResults.tracks.items[0].album.images[0].url : "",
+          artists: extractSongArtists(searchResults.tracks.items[0].artists),
+          length_ms: searchResults.tracks.items[0].duration_ms,
+          length: sharedService.millisToHoursMinutesAndSeconds(searchResults.tracks.items[0].duration_ms),
+          isExplicit: searchResults.tracks.items[0].explicit,
+          release_date: searchResults.tracks.items[0].album.release_date,
+          type: song.type,
+          isrc: searchResults.tracks.items[0].external_ids.isrc,
+          spotifyURI: searchResults.tracks.items[0].uri
+        }
+        tracksFromSearch.push(track);
+      }); 
+  };
+
+  return {tracksFromSearch, missingTracks};
+};
+
 /// Execute the copying of the playlist to the specified Spotify account
 export const transferPlaylist = async (token, userID, playlist) => {
   let newPlaylistID = "";   // The ID of the new playlist, which is necessary for adding tracks to it
@@ -456,58 +491,40 @@ export const transferPlaylist = async (token, userID, playlist) => {
   let tracksURIArray = [];
   let missingTracks = [];     // List of songs that could not be found reliably on Spotify
 
-  // Step 1: Find and retrieve the Spotify URI's for all the tracks that will be put into the transferred playlist
-  await playlist.tracks.forEach(song => {
-    if(song.isrc === "") {
-      missingTracks.push(song);
-      return;
-    }
-    try{
-      searchTrackByISRC(token, song.isrc)
-      .then((searchResults => {
-        let trackURI = searchResults.tracks.items[0].uri;
-        tracksURIArray.push(trackURI);
-      }));
-    }
-    catch(error){
-      missingTracks.push(song.songName);
-    }
-    
-  });
 
-  // Step 2: Create the playlist in the Spotify account and retrieve its Spotify ID
-  await createPlaylist(token, userID, newPlaylistName)
-    .then(newPlaylistResponse => {
-      newPlaylistID = newPlaylistResponse.id;
-  });
+  // // Step 2: Create the playlist in the Spotify account and retrieve its Spotify ID
+  // await createPlaylist(token, userID, newPlaylistName)
+  //   .then(newPlaylistResponse => {
+  //     newPlaylistID = newPlaylistResponse.id;
+  // });
 
 
-  // Step 3: Add all of the tracks to the newly-created Spotify playlist
-  // You can add a maximum of 100 songs at once
-  if(playlist.tracks.length <= 100) {
-    addTracksToPlaylist(token, tracksURIArray, newPlaylistID)
-    .then(response => {
-      console.log(response);
-      return response;
-    });
-  }
-  else {
-    let numTracksAdded = 0;
-    while(tracksURIArray.length - numTracksAdded > 100) {
-      await addTracksToPlaylist(token, tracksURIArray.slice(numTracksAdded, numTracksAdded+100), newPlaylistID)
-      .then(response => {
-        console.log(response);
-        return response;
-      });
-      numTracksAdded += 100;
-    }
+  // // Step 3: Add all of the tracks to the newly-created Spotify playlist
+  // // You can add a maximum of 100 songs at once
+  // if(playlist.tracks.length <= 100) {
+  //   addTracksToPlaylist(token, tracksURIArray, newPlaylistID)
+  //   .then(response => {
+  //     console.log(response);
+  //     return response;
+  //   });
+  // }
+  // else {
+  //   let numTracksAdded = 0;
+  //   while(tracksURIArray.length - numTracksAdded > 100) {
+  //     await addTracksToPlaylist(token, tracksURIArray.slice(numTracksAdded, numTracksAdded+100), newPlaylistID)
+  //     .then(response => {
+  //       console.log(response);
+  //       return response;
+  //     });
+  //     numTracksAdded += 100;
+  //   }
 
-    addTracksToPlaylist(token, tracksURIArray.slice(numTracksAdded), newPlaylistID)
-      .then(response => {
-        console.log(response);
-        return response;
-      });
-  }
+  //   addTracksToPlaylist(token, tracksURIArray.slice(numTracksAdded), newPlaylistID)
+  //     .then(response => {
+  //       console.log(response);
+  //       return response;
+  //     });
+  // }
   
   return missingTracks;
 };

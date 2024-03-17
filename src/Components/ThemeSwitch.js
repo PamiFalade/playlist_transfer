@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "../Views/ThemeSwitch.css";
 
 const ThemeSwitch = () => {
 
@@ -10,7 +11,6 @@ const ThemeSwitch = () => {
 
     // Get the the system's color theme
     const setInitialTheme = () => {
-        console.log(localStorage.getItem('theme'));
         let theme = localStorage.getItem('theme');    // Check the theme that the user last selected
         if(theme === null) {                            // If the user doesn't have a theme setting saved, match the system default
             let systemTheme = window.matchMedia("(prefers-color-scheme: dark)");    // Check if the system's theme is dark theme
@@ -34,7 +34,6 @@ const ThemeSwitch = () => {
         rootElem.setAttribute('data-theme', theme);
         setColorTheme(rootElem.getAttribute('data-theme'));
         localStorage.setItem("theme", theme);
-        console.log(localStorage.getItem('theme'));
     };
 
     return(

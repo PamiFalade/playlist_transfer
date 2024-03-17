@@ -1,5 +1,5 @@
 import { React, useState, useEffect, useRef, createRef } from "react"
-import { useLocation } from "react-router-dom";
+import { redirect, useLocation, useNavigate } from "react-router-dom";
 import "../Views/DestinationSelectViews.css";
 import PlatformSelector from "../Components/PlatformSelector";
 import { Button } from "react-bootstrap";
@@ -11,6 +11,8 @@ const DestinationSelect = () => {
     // State variable that indicates if the user has given authorization on an account on a platform
     const [loggedIn, setLoggedIn] = useState(false);
     const handleLoggedIn = () => setLoggedIn(!loggedIn);
+
+    const navigate = useNavigate();
 
     // State variable that contains data from the account that the user is currently logged into
     const [userAccount, setUserAccount] = useState({
@@ -51,29 +53,11 @@ const DestinationSelect = () => {
         });
     };
 
-    // State variable that holds the list of tracks that could not be transferred
-    const [missingTracks, setMissingTracks] = useState();
-
-    // Begin the transferring of the playlist
-    const beginTransferPlaylist = async () => {
-        // Step 1: Retrieve playlist data from sessionStorage
-        handleSetPlaylist(JSON.parse(sessionStorage.getItem("playlist")));
-        let destPlatform = JSON.parse(sessionStorage.getItem("destPlatform"));  // Ideally, this would be a state variable, or even a global variable because this is also used in the useEffect hook. But neither work
-
-        // Step 2: call the transferPlaylist function from webService
-        let errorTracks;    // Tracks that were not transferred due to some error
-        await webService.transferPlaylist(destPlatform, token, userAccount.userID, JSON.parse(sessionStorage.getItem("playlist")))
-                .then(response => {
-                    errorTracks = response;
-                })
-                .then(() => {
-                    setMissingTracks(errorTracks);
-                    
-                    // Step 3: Alert the user that the transfer has been done, and highlight the tracks that were not transferred
-                    setShowSummary(true);
-                });
-
-    };
+    const navigateTransferPage = () => {
+        sessionStorage.setItem("userAccount", JSON.stringify(userAccount));
+        sessionStorage.setItem("token", JSON.stringify(token));
+        navigate('/transfer-page');
+    }
 
     // Get the user's access token once they log in and store it in the state variable
     useEffect(() => {
@@ -127,14 +111,14 @@ const DestinationSelect = () => {
                                 Go Back
                             </button>
 
-                            <button className="button submitButton" onClick={beginTransferPlaylist}>
-                                Transfer Playlist
+                            <button className="button submitButton" onClick={navigateTransferPage}>
+                                Yes!
                             </button>
                         </div>
                     </div>
                 )}
 
-                { showSummary && <TransferSummary playlist={missingTracks}/>}
+                {/* { showSummary && <TransferSummary playlist={missingTracks}/>} */}
             
             </div>
         </main>

@@ -108,8 +108,7 @@ export const fetchPlaylist = (source, token, playlistID) => {
 
 };
 
-/// Calls the appropriate platform's extractSongInfo() method, which gets the song's title, image, 
-/// artist(s), and length, and checks if it is explicit
+/// Calls the appropriate platform's extractSongInfo() method, which gets the song's title, image, artist(s), and length, and checks if it is explicit
 export const extractSongInfo = async (source, playlist) => {
   let formattedPlaylist;
   switch(source) {
@@ -186,7 +185,25 @@ export const extractSongTitle = (source, title) => {
   return soundcloud.extractSongTitle(title);
 };
 
+/// Used to get the list of tracks that we were able to find, and the list of tracks that we were not able to find
+/// The user will be able to edit this list on the TransferPage before transferring the playlist
+export const getNewPlaylist = async (destPlatform, token, playlist) => {
+  let trackLists;
+  switch(destPlatform){
+    case "spotify":
+      trackLists = await spotify.getNewPlaylist(token, playlist);
+      break;
+    case "youtube":
+      
+      break;
+    default:
+      break;
+  };
 
+  return trackLists;
+}
+
+/// Used to do the act of transferring the playlist to the destination account 
 export const transferPlaylist = async (destPlatform, token, userID, playlist) => {
   let missingTracks;  // The list of songs that were not transferred due to an error
 

@@ -7,11 +7,10 @@ const TracklistDisplay = (props) => {
 
     let tracks = props.playlist;
 
-    const refTrackListDisplay = useRef();
+    const refTrackListDisplay = useRef();   // Will be used to adjust the truncation of the strings within the Tracklist Display based on window size
     const [trackListWidth, setTrackListWidth] = useState(0);
 
     useEffect(() => {
-        console.log(refTrackListDisplay.current);
         if(refTrackListDisplay.current){
             // Get the width of the tracklist when it gets mounted
             setTrackListWidth(refTrackListDisplay.current.offsetWidth);

@@ -18,7 +18,6 @@ export default function RootLayout() {
             setDestSelectLink(null);
         }
         else if(currentLocation.pathname.includes('destination-select')) {
-            console.log(playlistConfirmLink);
             setDestSelectLink(currentLocation.pathname);
         }
         else {

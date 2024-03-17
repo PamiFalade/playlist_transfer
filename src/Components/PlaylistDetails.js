@@ -28,7 +28,7 @@ const PlaylistDetails = () => {
     // Then navigate to DestinationSelect page
     const openDestinationSelect = () => {
         // Save all the playlist data to session storage
-        sessionStorage.setItem("playlist", JSON.stringify(playlist));
+        sessionStorage.setItem("originalPlaylist", JSON.stringify(playlist));
 
         // Go to DestinationSelect page
         navigate("/destination-select");
