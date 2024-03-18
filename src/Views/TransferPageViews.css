@@ -7,3 +7,25 @@
 .frontCard:hover {
     transform: none;
 }
+
+.cardBody {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 0.5fr 1fr;
+    grid-template-rows: 1fr;
+}
+
+.tracklistSummary {
+    height: 100%;
+    width: auto;
+    overflow-y: hidden;
+}
+
+#originalPlaylist {
+    grid-column-start: 1;
+}
+
+#newPlaylist {
+    grid-column-start: 3;
+}

@@ -20,6 +20,8 @@
   --primary-fg-color: black;
   --secondary-fg-color: #464033;
 
+  --close-icon-path: "black-close.svg";
+
 }
 
 /* Variables for dark color theme */
@@ -32,6 +34,8 @@
   
   --primary-fg-color: white;
   --secondary-fg-color: #bbc4c2;
+
+  --close-icon-path: "white-close.svg";
 
 }
 
@@ -81,6 +85,16 @@ h1 {
 
 h5, p {
   color: var(--secondary-fg-color);
+}
+
+.h2Textbox {
+  background-color: inherit;
+  color: var(--primary-fg-color);
+  width: 100%;
+  text-align: center;
+  font-weight: bold;
+  font-family: "Visby Round";
+  font-size: 1.5rem;
 }
 
 /* Buttons */

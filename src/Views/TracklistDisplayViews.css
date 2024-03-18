@@ -1,5 +1,5 @@
 .tracklistDisplay {
-    max-height: 35vh;
+    max-height: 70%;
     min-width: 27vw;
     display: flex;
     flex-direction: column;
@@ -17,6 +17,7 @@ li {
 .songDisplay {
     display: flex;
     flex-direction: row;
+    justify-content:space-between;
     flex-wrap: nowrap;
     border: 0.3px solid linear-gradient(var(--tertiary-bg-color) 30%, black 100%);
     height: 10vh;
@@ -32,6 +33,7 @@ li {
 
 .songInfo {
     height: 90%;
+    width: 100%;
     margin-top: 2.5%;
 }
 
@@ -41,4 +43,19 @@ li {
     background-color: var(--secondary-fg-color);
     margin-left: 25%;
     margin-top: 2%;
+}
+
+.closeButton {
+    height: 100%;
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.closeButton:hover {
+    cursor: pointer;
+}
+.closeIcon {
+    height: 30%;
+    src: "white-close.svg";
 }

@@ -464,20 +464,25 @@ export const getNewPlaylist = async (token, playlist) => {
 
     await searchTrackByISRC(token, song.isrc)   // Get the search results for all the tracks in the playlist
       .then((searchResults) => {
-        let track = {
-          name: searchResults.tracks.items[0].name,
-          album: searchResults.tracks.items[0].album.name,
-          image: searchResults.tracks.items[0].album.images.length > 0 ? searchResults.tracks.items[0].album.images[0].url : "",
-          artists: extractSongArtists(searchResults.tracks.items[0].artists),
-          length_ms: searchResults.tracks.items[0].duration_ms,
-          length: sharedService.millisToHoursMinutesAndSeconds(searchResults.tracks.items[0].duration_ms),
-          isExplicit: searchResults.tracks.items[0].explicit,
-          release_date: searchResults.tracks.items[0].album.release_date,
-          type: song.type,
-          isrc: searchResults.tracks.items[0].external_ids.isrc,
-          spotifyURI: searchResults.tracks.items[0].uri
+        try {
+          let track = {
+            name: searchResults.tracks.items[0].name,
+            album: searchResults.tracks.items[0].album.name,
+            image: searchResults.tracks.items[0].album.images.length > 0 ? searchResults.tracks.items[0].album.images[0].url : "",
+            artists: extractSongArtists(searchResults.tracks.items[0].artists),
+            length_ms: searchResults.tracks.items[0].duration_ms,
+            length: sharedService.millisToHoursMinutesAndSeconds(searchResults.tracks.items[0].duration_ms),
+            isExplicit: searchResults.tracks.items[0].explicit,
+            release_date: searchResults.tracks.items[0].album.release_date,
+            type: song.type,
+            isrc: searchResults.tracks.items[0].external_ids.isrc,
+            spotifyURI: searchResults.tracks.items[0].uri
+          }
+          tracksFromSearch.push(track);
+        } catch(error) {
+          missingTracks.push(song);
+          console.error("Failed to search song " + song.name);
         }
-        tracksFromSearch.push(track);
       }); 
   };
 

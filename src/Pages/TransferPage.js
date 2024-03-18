@@ -8,18 +8,22 @@ import * as webService from "../models/webService.js";
 
 const TransferPage = () => {
 
-    // State variable that indicates when the initial attempt to duplicate the playlist on the destination platform is complete
-    const [searchComplete, setSearchComplete] = useState(false);
-
-    // State variable that holds the tracklist that will be transferred to the destination account
-    const [tracksToAdd, setTracksToAdd] = useState([]);
-
-     // State variable for the tracks that could not be found in the search on the destination platform
-    const [missingTracks, setMissingTracks] = useState([]); 
-
-   
+    // Retrieve original playlist's information 
     const originalPlaylist = JSON.parse(sessionStorage.getItem("originalPlaylist"));   // The playlist that will be copied
 
+    // State variable for the tracks that could not be found in the search on the destination platform
+    const [missingTracks, setMissingTracks] = useState([]); 
+
+    // State variable for the tracks that could not be found in the search on the destination platform
+    const [newPlaylistName, setNewPlaylistName] = useState(originalPlaylist.playlistName + " - copy");
+
+    // State variable for the tracks that could not be found in the search on the destination platform
+    const [newPlaylistTracks, setNewPlaylistTracks] = useState([]);
+
+
+    const updateNewPlaylistName = (updatedName) => {
+        setNewPlaylistName(updatedName);
+    }
 
     // Function to get the playlist of tracks that we found on the destination platform
     const getNewPlaylist = async () => {
@@ -33,11 +37,9 @@ const TransferPage = () => {
         // Step 2: call the transferPlaylist function from webService
         await webService.getNewPlaylist(destPlatform, token, JSON.parse(sessionStorage.getItem("originalPlaylist")))
         .then(results => {
-            setTracksToAdd(results.tracksFromSearch);
+            setNewPlaylistTracks(results.tracksFromSearch);
             setMissingTracks(results.missingTracks);
             return results;
-        }).then((results) => {
-            setSearchComplete(true);
         });
     };
     
@@ -72,8 +74,17 @@ const TransferPage = () => {
         <main>
             <div className="frontCard" >
                 <h2>Make Sure We Got It Right!</h2>
-                <TracklistDisplay playlist={originalPlaylist.tracks} />
-                <TracklistDisplay playlist={tracksToAdd} />
+                <div className="cardBody">
+                    <div className="tracklistSummary">
+                        <h2>{originalPlaylist.playlistName}</h2>
+                        <TracklistDisplay className="tracklist" id="originalPlaylist" playlist={originalPlaylist.tracks} isEditable={false} />
+                    </div>
+                    <div id="middle"/>
+                    <div className="tracklistSummary">
+                        <input className="h2Textbox" type="text"  value={newPlaylistName} onChange={updateNewPlaylistName}/>
+                        <TracklistDisplay className="tracklist" id="newPlaylist" playlist={newPlaylistTracks} isEditable={true} />
+                    </div>
+                </div>
             </div>
         </main>
     )

@@ -4,10 +4,18 @@ import "../Views/ThemeSwitch.css";
 const ThemeSwitch = () => {
 
     let rootElem = document.documentElement;    // Gets a reference to the root node of the document
+
     // State variables for setting the theme of the web app
     const [colorTheme, setColorTheme] = useState("");   //Change default to be the system setting
 
-    // Get theme setting from previous session
+    // Helper method to change the color theme and update the icons
+    const updateColorTheme = (newTheme) => {
+        rootElem.setAttribute('data-theme', newTheme);
+        setColorTheme(rootElem.getAttribute('data-theme'));
+        newTheme === 'dark' ? localStorage.setItem("iconColor", "white") : localStorage.setItem("iconColor", "black");   // Set the icon path in the local storage
+        window.dispatchEvent(new Event("storage"));     // Notify event listeners of the update
+    };
+
 
     // Get the the system's color theme
     const setInitialTheme = () => {
@@ -22,17 +30,16 @@ const ThemeSwitch = () => {
             }
         }
         
-        rootElem.setAttribute('data-theme', theme);
-        setColorTheme(rootElem.getAttribute('data-theme'));
+        updateColorTheme(theme);
     };
 
+    // Set the initial app color theme as soon as this component loads, which is when the main page loads
     useEffect(setInitialTheme, []);
     
     const toggleColorTheme = () => {
         let theme = "";
         (colorTheme === "light") ? theme = "dark" : theme = "light";
-        rootElem.setAttribute('data-theme', theme);
-        setColorTheme(rootElem.getAttribute('data-theme'));
+        updateColorTheme(theme);
         localStorage.setItem("theme", theme);
     };
 

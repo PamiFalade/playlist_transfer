@@ -179,12 +179,16 @@ const PlaylistDetails = () => {
 
                 { foundPlaylist === true &&
                     <div>
-                        <img id="playlistImage" src={playlist.image}/>
-                        <h2>{playlist.playlistName}</h2>
-                        <div id="playlistInfo">
-                            <p>{playlist.tracks.length} songs | {playlist.length}</p>
+                        <div className="playlistSummaryHeader">
+                            <img id="playlistImage" src={playlist.image}/>
+                            <h2>{playlist.playlistName}</h2>
+                            <div id="playlistInfo">
+                                <p>{playlist.tracks.length} songs | {playlist.length}</p>
+                            </div>
                         </div>
-                        <TracklistDisplay playlist={playlist.tracks}/>
+                        <div className="tracklistSection">
+                            <TracklistDisplay playlist={playlist.tracks} isEditable={false} />
+                        </div>
                         <div className="actionButtons">
                             <button className="button returnButton" type="button" onClick={navigateBack}>
                                 Back
