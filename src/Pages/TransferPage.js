@@ -2,11 +2,14 @@ import { useState, useEffect } from "react";
 import "../Views/TransferPageViews.css";
 import TracklistDisplay from "../Components/TracklistDisplay";
 import * as webService from "../models/webService.js";
-
-
+import ScaleLoader from "react-spinners/ScaleLoader";
 
 
 const TransferPage = () => {
+
+    // Used to display loading symbol while the list of search results hasn't loaded yet.
+    // Loading symbol is displayed while it's "loading", and page will be displayed while it is "not loading"
+    const [loading, setLoading] = useState(true);
 
     // Retrieve original playlist's information 
     const originalPlaylist = JSON.parse(sessionStorage.getItem("originalPlaylist"));   // The playlist that will be copied
@@ -39,6 +42,7 @@ const TransferPage = () => {
         .then(results => {
             setNewPlaylistTracks(results.tracksFromSearch);
             setMissingTracks(results.missingTracks);
+            setLoading(false);
             return results;
         });
     };
@@ -72,20 +76,34 @@ const TransferPage = () => {
 
     return(
         <main>
-            <div className="frontCard" >
-                <h2>Make Sure We Got It Right!</h2>
-                <div className="cardBody">
-                    <div className="tracklistSummary">
-                        <h2>{originalPlaylist.playlistName}</h2>
-                        <TracklistDisplay className="tracklist" id="originalPlaylist" playlist={originalPlaylist.tracks} isEditable={false} />
-                    </div>
-                    <div id="middle"/>
-                    <div className="tracklistSummary">
-                        <input className="h2Textbox" type="text"  value={newPlaylistName} onChange={updateNewPlaylistName}/>
-                        <TracklistDisplay className="tracklist" id="newPlaylist" playlist={newPlaylistTracks} isEditable={true} />
+             {/* Loading symbol */}
+             { loading && 
+                        <div className="loadingSymbol">
+                            <h2>Fetching Playlist...</h2>
+                            <ScaleLoader 
+                                color="var(--primary-fg-color)"
+                                loading={loading}
+                                size={150}
+                                aria-label="Loading Spinner"
+                                data-testid="loader"/>
+                        </div>
+            }
+            { !loading &&
+                <div className="frontCard" >
+                    <h2>Make Sure We Got It Right!</h2>
+                    <div className="cardBody">
+                        <div className="tracklistSummary">
+                            <h2>{originalPlaylist.playlistName}</h2>
+                            <TracklistDisplay className="tracklist" id="originalPlaylist" playlist={originalPlaylist.tracks} isEditable={false} />
+                        </div>
+                        <div id="middle"/>
+                        <div className="tracklistSummary">
+                            <input className="h2Textbox" type="text"  value={newPlaylistName} onChange={updateNewPlaylistName}/>
+                            <TracklistDisplay className="tracklist" id="newPlaylist" playlist={newPlaylistTracks} isEditable={true} />
+                        </div>
                     </div>
                 </div>
-            </div>
+            }
         </main>
     )
 };

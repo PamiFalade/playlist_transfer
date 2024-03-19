@@ -187,7 +187,7 @@ const PlaylistDetails = () => {
                             </div>
                         </div>
                         <div className="tracklistSection">
-                            <TracklistDisplay playlist={playlist.tracks} isEditable={false} />
+                            <TracklistDisplay playlist={playlist.tracks} isEditable={false}/>
                         </div>
                         <div className="actionButtons">
                             <button className="button returnButton" type="button" onClick={navigateBack}>

@@ -8,8 +8,11 @@ import React from "react";
 /// Second prop is the "isEditable" prop, which indicates whether the user will be able to interact with the UI to edit the array of tracks. This enables the delete button
 const TracklistDisplay = (props) => {
 
-    let tracks = props.playlist;
+    let playlist = props.playlist;
     let isEditable = props.isEditable;
+
+    // State variable for the track list that will be sent to the destination account
+    const [tracks, setTracks] = useState([...playlist]);
 
     const refTrackListDisplay = useRef();   // Will be used to adjust the truncation of the strings within the Tracklist Display based on window size
     const [trackListWidth, setTrackListWidth] = useState(0);
@@ -17,8 +20,15 @@ const TracklistDisplay = (props) => {
     // State variable and helper functions for updating the icons
     const getIconColor = () => localStorage.getItem("iconColor");
     const [iconColor, setIconColor] = useState(getIconColor());
-    
 
+    // Remove a track from the list when the remove icon is clicked on the TracklistDisplay
+    const removeTrack = (trackIndex) => {
+        let updatedTracks = [...tracks];
+        updatedTracks.splice(trackIndex, 1);
+        setTracks(updatedTracks);
+    }
+
+    // Add event listener to the localStorage and update the colors of the icons when the event is triggered by changing the color theme
     useEffect(() => {
         const storage = (event) => {
           setIconColor(localStorage.getItem("iconColor"));
@@ -56,7 +66,7 @@ const TracklistDisplay = (props) => {
                             <p>{sharedService.truncateString(song.artists, trackListWidth/18)}</p>
                         </div>
                         { isEditable && 
-                            <div className="closeButton">
+                            <div className="closeButton" onClick={() => removeTrack(index)}>
                                 <img className="closeIcon" src={`${iconColor}-close.svg`} />
                             </div>
                         }
