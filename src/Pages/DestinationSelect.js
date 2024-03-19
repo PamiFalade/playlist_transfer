@@ -53,6 +53,7 @@ const DestinationSelect = () => {
         });
     };
 
+    // Navigate to the Transfer page when the "Yes" button is clicked
     const navigateTransferPage = () => {
         sessionStorage.setItem("userAccount", JSON.stringify(userAccount));
         sessionStorage.setItem("token", JSON.stringify(token));

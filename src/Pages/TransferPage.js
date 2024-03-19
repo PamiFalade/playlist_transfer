@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../Views/TransferPageViews.css";
 import TracklistDisplay from "../Components/TracklistDisplay";
 import * as webService from "../models/webService.js";
@@ -6,6 +7,8 @@ import ScaleLoader from "react-spinners/ScaleLoader";
 
 
 const TransferPage = () => {
+
+    const navigate = useNavigate();
 
     // Used to display loading symbol while the list of search results hasn't loaded yet.
     // Loading symbol is displayed while it's "loading", and page will be displayed while it is "not loading"
@@ -23,8 +26,14 @@ const TransferPage = () => {
     // State variable for the tracks that could not be found in the search on the destination platform
     const [newPlaylistTracks, setNewPlaylistTracks] = useState([]);
 
+    // Navigate back to the Destination select page when the "Back" button is clicked
+    const navigateBack = () => {
+        navigate('/destination-select');
+    };
 
-    const updateNewPlaylistName = (updatedName) => {
+    // Update playlist name when user changes it in the input box
+    const updateNewPlaylistName = (event) => {
+        const updatedName = event.target.value;
         setNewPlaylistName(updatedName);
     }
 
@@ -101,6 +110,15 @@ const TransferPage = () => {
                             <input className="h2Textbox" type="text"  value={newPlaylistName} onChange={updateNewPlaylistName}/>
                             <TracklistDisplay className="tracklist" id="newPlaylist" playlist={newPlaylistTracks} isEditable={true} />
                         </div>
+                    </div>
+
+                    <div className="actionButtons">
+                        <button className="button returnButton" onClick={navigateBack} >
+                            Go Back
+                        </button>
+                        <button className="button submitButton" >
+                            Transfer Playlist!
+                        </button>
                     </div>
                 </div>
             }

@@ -62,7 +62,7 @@ const TracklistDisplay = (props) => {
                             <img className="songImg" src={song.image !== "" ? song.image : sharedService.missingTrackImg}/>
                         </div>
                         <div className="songInfo">
-                            <h5>{(index+1) + "." + sharedService.truncateString(song.name, trackListWidth/20)}</h5>
+                            <h5>{(index+1) + ". " + sharedService.truncateString(song.name, trackListWidth/20)}</h5>
                             <p>{sharedService.truncateString(song.artists, trackListWidth/18)}</p>
                         </div>
                         { isEditable && 
